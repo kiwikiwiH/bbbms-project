@@ -1,10 +1,25 @@
-node_modules
+node_modules/
+vendor/
+.env
+.env.*
+!.env.example
+
+# Legacy stack (removed)
+backend/.env
+frontend/.env
+frontend/build/
+blockchain/cache/
+blockchain/artifacts/
 venv/
 __pycache__/
 *.pyc
-.env
-backend/.env
-frontend/.env
-blockchain/cache/
-blockchain/artifacts/
-frontend/build/
+
+# Laravel
+tarrlok/vendor/
+tarrlok/.env
+tarrlok/.env.*
+!tarrlok/.env.example
+tarrlok/node_modules/
+tarrlok/public/build/
+tarrlok/storage/*.key
+tarrlok/database/*.sqlite
