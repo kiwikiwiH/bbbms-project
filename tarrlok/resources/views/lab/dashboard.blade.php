@@ -8,29 +8,41 @@
 @endsection
 
 @section('content')
-<div class="hospital-card">
-    <div class="hospital-card-body">
-        <div class="hospital-placeholder" style="padding:32px 24px;">
-            <div class="hospital-placeholder-icon">
-                <span class="material-symbols-outlined">science</span>
-            </div>
-            <h2>Lab portal</h2>
-            <p>Your account was issued by <strong>{{ $hospital->name }}</strong>. Blood inventory and unit recording features will be available here soon.</p>
-        </div>
-        <dl class="hospital-detail-grid" style="margin-top:8px;">
-            <div class="hospital-detail-item">
-                <dt>Facility</dt>
-                <dd>{{ $hospital->name }}</dd>
-            </div>
-            <div class="hospital-detail-item">
-                <dt>Your role</dt>
-                <dd>{{ $user->job_title }}</dd>
-            </div>
-            <div class="hospital-detail-item">
-                <dt>Work email</dt>
-                <dd>{{ $user->email }}</dd>
-            </div>
-        </dl>
+<div class="hospital-stats" style="margin-bottom:24px;">
+    <div class="hospital-stat">
+        <div class="hospital-stat-label">Available at facility</div>
+        <div class="hospital-stat-value">{{ $availableCount }}</div>
+        <div class="hospital-stat-note">Ready for hospital requests</div>
     </div>
+    <div class="hospital-stat">
+        <div class="hospital-stat-label">Recorded by you</div>
+        <div class="hospital-stat-value">{{ $recordedByYou }}</div>
+        <div class="hospital-stat-note"><a href="{{ route('lab.units.index') }}" style="color:#a20513;">View units</a></div>
+    </div>
+    <div class="hospital-stat">
+        <div class="hospital-stat-label">Issued to partners</div>
+        <div class="hospital-stat-value">{{ $issuedCount }}</div>
+        <div class="hospital-stat-note">Fulfilled by hospital admin</div>
+    </div>
+</div>
+
+<div class="hospital-card" style="margin-bottom:20px;">
+    <div class="hospital-card-body">
+        <p class="hospital-flow-note" style="margin:0;">
+            <span class="material-symbols-outlined">science</span>
+            <strong>Your role:</strong> After a donor gives blood and it passes testing, you <strong>register each unit</strong> here. That adds stock to <strong>{{ $hospital->name }}</strong> inventory so the hospital administrator can fulfill partner requests.
+        </p>
+    </div>
+</div>
+
+<div style="display:flex;gap:12px;flex-wrap:wrap;">
+    <a href="{{ route('lab.units.create') }}" class="hospital-btn hospital-btn-primary">
+        <span class="material-symbols-outlined">add</span>
+        Register blood unit
+    </a>
+    <a href="{{ route('lab.units.index') }}" class="hospital-btn hospital-btn-outline">
+        <span class="material-symbols-outlined">inventory_2</span>
+        View inventory
+    </a>
 </div>
 @endsection

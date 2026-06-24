@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'blood_groups' => ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+
     'institution_types' => [
         'teaching' => 'Teaching Hospital',
         'regional' => 'Regional Hospital',

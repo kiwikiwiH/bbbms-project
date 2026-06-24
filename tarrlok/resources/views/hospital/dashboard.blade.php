@@ -9,13 +9,13 @@
 <div class="hospital-stats">
     <div class="hospital-stat">
         <div class="hospital-stat-label">Units on hand</div>
-        <div class="hospital-stat-value">—</div>
-        <div class="hospital-stat-note">Inventory module coming soon</div>
+        <div class="hospital-stat-value">{{ $unitsOnHand }}</div>
+        <div class="hospital-stat-note"><a href="{{ route('hospital.inventory') }}" style="color:#a20513;">Blood inventory</a></div>
     </div>
     <div class="hospital-stat">
         <div class="hospital-stat-label">Pending requests</div>
-        <div class="hospital-stat-value">—</div>
-        <div class="hospital-stat-note">Request blood from partner facilities</div>
+        <div class="hospital-stat-value">{{ $pendingRequests }}</div>
+        <div class="hospital-stat-note"><a href="{{ route('hospital.requests') }}" style="color:#a20513;">Review requests</a></div>
     </div>
     <div class="hospital-stat">
         <div class="hospital-stat-label">Lab staff accounts</div>

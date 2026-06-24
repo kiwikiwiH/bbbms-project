@@ -2,9 +2,12 @@
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\RegistrationReviewController;
+use App\Http\Controllers\Hospital\BloodInventoryController;
+use App\Http\Controllers\Hospital\BloodRequestController;
 use App\Http\Controllers\Hospital\DashboardController as HospitalDashboardController;
 use App\Http\Controllers\Hospital\LabStaffController;
 use App\Http\Controllers\Hospital\PlaceholderController as HospitalPlaceholderController;
+use App\Http\Controllers\Lab\BloodUnitController as LabBloodUnitController;
 use App\Http\Controllers\Lab\DashboardController as LabDashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -43,8 +46,11 @@ Route::get('/dashboard', function () {
 
 Route::middleware(['auth', 'hospital'])->prefix('hospital')->name('hospital.')->group(function () {
     Route::get('/', HospitalDashboardController::class)->name('dashboard');
-    Route::get('/inventory', [HospitalPlaceholderController::class, 'inventory'])->name('inventory');
-    Route::get('/requests', [HospitalPlaceholderController::class, 'requests'])->name('requests');
+    Route::get('/inventory', [BloodInventoryController::class, 'index'])->name('inventory');
+    Route::get('/requests', [BloodRequestController::class, 'index'])->name('requests');
+    Route::post('/requests/{bloodRequest}/approve', [BloodRequestController::class, 'approve'])->name('requests.approve');
+    Route::post('/requests/{bloodRequest}/reject', [BloodRequestController::class, 'reject'])->name('requests.reject');
+    Route::post('/requests/{bloodRequest}/issue', [BloodRequestController::class, 'issue'])->name('requests.issue');
     Route::get('/partners', [HospitalPlaceholderController::class, 'partners'])->name('partners');
     Route::get('/facility', [HospitalPlaceholderController::class, 'facility'])->name('facility');
     Route::get('/lab-staff', [LabStaffController::class, 'index'])->name('lab-staff.index');
@@ -57,6 +63,9 @@ Route::middleware(['auth', 'hospital'])->prefix('hospital')->name('hospital.')->
 
 Route::middleware(['auth', 'lab'])->prefix('lab')->name('lab.')->group(function () {
     Route::get('/', LabDashboardController::class)->name('dashboard');
+    Route::get('/units', [LabBloodUnitController::class, 'index'])->name('units.index');
+    Route::get('/units/create', [LabBloodUnitController::class, 'create'])->name('units.create');
+    Route::post('/units', [LabBloodUnitController::class, 'store'])->name('units.store');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {

@@ -444,6 +444,10 @@
   font-size: 15px;
 }
 
+select.hospital-input {
+  cursor: pointer;
+}
+
 .hospital-input:focus {
   outline: none;
   border-color: #a20513;
@@ -461,6 +465,172 @@
   gap: 12px;
   justify-content: flex-end;
   margin-top: 8px;
+}
+
+.hospital-requests-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.hospital-search-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 220px;
+  max-width: 360px;
+  padding: 10px 14px;
+  border: 1px solid #e0e2e7;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.hospital-search-form .material-symbols-outlined {
+  font-size: 20px;
+  color: #555f6f;
+}
+
+.hospital-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.hospital-inventory-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  background: #f0f4ff;
+  border: 1px solid #c5d4f7;
+  font-size: 13px;
+  color: #334155;
+}
+
+.hospital-inventory-pill a {
+  color: #a20513;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hospital-request-id {
+  color: #a20513;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.hospital-blood-group {
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid #e0e2e7;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 13px;
+  background: #fafbfc;
+}
+
+.hospital-urgency {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.hospital-urgency.emergency {
+  background: #ffdad6;
+  color: #93000a;
+}
+
+.hospital-urgency.routine {
+  background: #e6e8ed;
+  color: #555f6f;
+}
+
+.hospital-req-status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.hospital-req-status.pending {
+  background: #e6e8ed;
+  color: #555f6f;
+}
+
+.hospital-req-status.approved {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.hospital-req-status.fulfilled {
+  background: #ecfdf5;
+  color: #166534;
+}
+
+.hospital-req-status.rejected {
+  background: #ffdad6;
+  color: #93000a;
+}
+
+.hospital-req-status.available,
+.hospital-req-status.issued {
+  background: #ecfdf5;
+  color: #166534;
+}
+
+.hospital-request-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.hospital-request-actions form {
+  display: inline;
+}
+
+.hospital-muted {
+  font-size: 13px;
+  color: #555f6f;
+}
+
+.hospital-flow-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 14px 16px;
+  border-radius: 6px;
+  background: #fafbfc;
+  border: 1px solid #e0e2e7;
+  font-size: 13px;
+  line-height: 20px;
+  color: #555f6f;
+}
+
+.hospital-flow-note .material-symbols-outlined {
+  font-size: 20px;
+  color: #a20513;
+  flex-shrink: 0;
+}
+
+.hospital-pagination {
+  padding: 16px 20px;
+  border-top: 1px solid #e6e8ed;
 }
 
 @media (max-width: 900px) {

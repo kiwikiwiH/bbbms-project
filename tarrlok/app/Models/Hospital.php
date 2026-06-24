@@ -49,6 +49,32 @@ class Hospital extends Model
         return $this->users()->where('role', 'lab');
     }
 
+    public function bloodUnits()
+    {
+        return $this->hasMany(BloodUnit::class);
+    }
+
+    public function incomingBloodRequests()
+    {
+        return $this->hasMany(BloodRequest::class, 'fulfilling_hospital_id');
+    }
+
+    public function outgoingBloodRequests()
+    {
+        return $this->hasMany(BloodRequest::class, 'requesting_hospital_id');
+    }
+
+    public function availableUnitsCount(?string $bloodGroup = null): int
+    {
+        $query = $this->bloodUnits()->available();
+
+        if ($bloodGroup) {
+            $query->where('blood_group', $bloodGroup);
+        }
+
+        return $query->count();
+    }
+
     public function typeLabel(): string
     {
         return config('tarrlok.institution_types.'.$this->type, $this->type);

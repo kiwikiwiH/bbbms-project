@@ -10,10 +10,14 @@ class DashboardController extends Controller
     public function __invoke(): View
     {
         $user = auth()->user()->load('hospital');
+        $hospital = $user->hospital;
 
         return view('lab.dashboard', [
             'user' => $user,
-            'hospital' => $user->hospital,
+            'hospital' => $hospital,
+            'availableCount' => $hospital->availableUnitsCount(),
+            'recordedByYou' => $hospital->bloodUnits()->where('recorded_by', $user->id)->count(),
+            'issuedCount' => $hospital->bloodUnits()->where('status', 'issued')->count(),
         ]);
     }
 }

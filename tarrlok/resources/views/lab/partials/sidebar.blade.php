@@ -24,6 +24,14 @@
             <span class="material-symbols-outlined">dashboard</span>
             <span>Overview</span>
         </a>
+        <a href="{{ route('lab.units.create') }}" @class(['active' => $route === 'lab.units.create']) title="Register unit">
+            <span class="material-symbols-outlined">add_circle</span>
+            <span>Register unit</span>
+        </a>
+        <a href="{{ route('lab.units.index') }}" @class(['active' => $route === 'lab.units.index']) title="Inventory">
+            <span class="material-symbols-outlined">inventory_2</span>
+            <span>Inventory</span>
+        </a>
     </nav>
 
     <div class="hospital-sidebar-foot">
