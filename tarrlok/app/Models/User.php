@@ -48,6 +48,11 @@ class User extends Authenticatable
         return $this->role === 'hospital';
     }
 
+    public function isLab(): bool
+    {
+        return $this->role === 'lab';
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';

@@ -40,6 +40,10 @@
             <span class="material-symbols-outlined">local_hospital</span>
             <span>Facility Profile</span>
         </a>
+        <a href="{{ route('hospital.lab-staff.index') }}" @class(['active' => str_starts_with($route ?? '', 'hospital.lab-staff')]) title="Lab Staff">
+            <span class="material-symbols-outlined">science</span>
+            <span>Lab Staff</span>
+        </a>
     </nav>
 
     <div class="hospital-sidebar-foot">

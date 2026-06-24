@@ -11,6 +11,7 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
+    use RedirectsByRole;
     /**
      * Display the login view.
      */
@@ -28,11 +29,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        $home = $request->user()->isAdmin()
-            ? route('admin.dashboard', absolute: false)
-            : route('hospital.dashboard', absolute: false);
-
-        return redirect()->intended($home);
+        return $this->redirectHome($request->user());
     }
 
     /**

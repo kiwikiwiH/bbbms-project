@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Hospital;
+namespace App\Http\Controllers\Lab;
 
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
@@ -10,12 +10,10 @@ class DashboardController extends Controller
     public function __invoke(): View
     {
         $user = auth()->user()->load('hospital');
-        $hospital = $user->hospital;
 
-        return view('hospital.dashboard', [
+        return view('lab.dashboard', [
             'user' => $user,
-            'hospital' => $hospital,
-            'labStaffCount' => $hospital->labStaff()->count(),
+            'hospital' => $user->hospital,
         ]);
     }
 }

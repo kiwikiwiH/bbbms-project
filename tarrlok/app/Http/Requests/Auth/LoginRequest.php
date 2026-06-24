@@ -55,8 +55,12 @@ class LoginRequest extends FormRequest
         if ($user->status !== 'active') {
             Auth::logout();
 
+            $message = $user->status === 'suspended'
+                ? 'Your account has been suspended. Contact your hospital administrator.'
+                : 'Your account is pending verification. You will receive an email once approved.';
+
             throw ValidationException::withMessages([
-                'email' => 'Your account is pending verification. You will receive an email once approved.',
+                'email' => $message,
             ]);
         }
 

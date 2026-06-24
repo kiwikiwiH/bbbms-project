@@ -44,6 +44,11 @@ class Hospital extends Model
         return $this->users()->where('role', 'hospital')->first();
     }
 
+    public function labStaff()
+    {
+        return $this->users()->where('role', 'lab');
+    }
+
     public function typeLabel(): string
     {
         return config('tarrlok.institution_types.'.$this->type, $this->type);

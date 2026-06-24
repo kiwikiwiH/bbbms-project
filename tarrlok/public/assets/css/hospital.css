@@ -328,6 +328,141 @@
   margin-inline: auto;
 }
 
+.hospital-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.hospital-btn-primary {
+  background: #c62828;
+  color: #fff;
+}
+
+.hospital-btn-primary:hover {
+  background: #93000e;
+}
+
+.hospital-btn-outline {
+  background: #fff;
+  border: 1px solid #e0e2e7;
+  color: #555f6f;
+}
+
+.hospital-btn-outline:hover {
+  border-color: #a20513;
+  color: #a20513;
+}
+
+.hospital-btn-sm {
+  padding: 7px 12px;
+  font-size: 13px;
+}
+
+.hospital-table-wrap {
+  overflow-x: auto;
+}
+
+.hospital-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.hospital-table th,
+.hospital-table td {
+  padding: 14px 20px;
+  text-align: left;
+  border-bottom: 1px solid #e6e8ed;
+}
+
+.hospital-table th {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #555f6f;
+  background: #fafbfc;
+}
+
+.hospital-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.hospital-badge.approved {
+  background: #ecfdf5;
+  color: #166534;
+}
+
+.hospital-badge.rejected {
+  background: #ffdad6;
+  color: #93000a;
+}
+
+.hospital-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.hospital-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hospital-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #5b403d;
+}
+
+.hospital-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e4beba;
+  border-radius: 4px;
+  background: #f7f9fe;
+  font-family: inherit;
+  font-size: 15px;
+}
+
+.hospital-input:focus {
+  outline: none;
+  border-color: #a20513;
+  box-shadow: 0 0 0 2px rgb(162 5 19 / 0.15);
+}
+
+.hospital-field-hint {
+  margin: 0;
+  font-size: 12px;
+  color: #555f6f;
+}
+
+.hospital-form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
 @media (max-width: 900px) {
   .hospital-sidebar {
     width: 72px;

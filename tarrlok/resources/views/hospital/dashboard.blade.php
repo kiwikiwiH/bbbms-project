@@ -18,9 +18,9 @@
         <div class="hospital-stat-note">Request blood from partner facilities</div>
     </div>
     <div class="hospital-stat">
-        <div class="hospital-stat-label">Partner hospitals</div>
-        <div class="hospital-stat-value">—</div>
-        <div class="hospital-stat-note">Exchange network (planned)</div>
+        <div class="hospital-stat-label">Lab staff accounts</div>
+        <div class="hospital-stat-value">{{ $labStaffCount }}</div>
+        <div class="hospital-stat-note"><a href="{{ route('hospital.lab-staff.index') }}" style="color:#a20513;">Manage lab staff</a></div>
     </div>
     <div class="hospital-stat">
         <div class="hospital-stat-label">HeFRA license</div>

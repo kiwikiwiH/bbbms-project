@@ -16,7 +16,11 @@
         </li>
         <li>
             <strong>Lab staff</strong>
-            — Accounts are issued by your hospital administrator (coming soon).
+            — Accounts are issued by your hospital administrator after your facility is approved.
+        </li>
+        <li>
+            <strong>Platform administrators</strong>
+            — Tarrlok operations team only. No public registration.
         </li>
     </ul>
     <p class="access-roles-foot">Blood donors do not need a login — donations are recorded in person by hospital and lab staff.</p>
