@@ -50,6 +50,28 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        $user = Auth::user();
+
+        if ($user->status !== 'active') {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Your account is pending verification. You will receive an email once approved.',
+            ]);
+        }
+
+        if ($user->hospital && $user->hospital->status !== 'approved') {
+            Auth::logout();
+
+            $message = $user->hospital->status === 'rejected'
+                ? 'Your facility registration was not approved. Please contact support.'
+                : 'Your facility registration is still under review.';
+
+            throw ValidationException::withMessages([
+                'email' => $message,
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

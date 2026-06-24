@@ -7,15 +7,25 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\HospitalRegistrationController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
+    Route::get('register', [HospitalRegistrationController::class, 'step1'])
         ->name('register');
-
-    Route::post('register', [RegisteredUserController::class, 'store']);
+    Route::post('register/step-1', [HospitalRegistrationController::class, 'storeStep1'])
+        ->name('register.step1.store');
+    Route::get('register/step-2', [HospitalRegistrationController::class, 'step2'])
+        ->name('register.step2');
+    Route::post('register/step-2', [HospitalRegistrationController::class, 'storeStep2'])
+        ->name('register.step2.store');
+    Route::get('register/review', [HospitalRegistrationController::class, 'review'])
+        ->name('register.review');
+    Route::post('register/submit', [HospitalRegistrationController::class, 'submit'])
+        ->name('register.submit');
+    Route::get('register/pending', [HospitalRegistrationController::class, 'pending'])
+        ->name('register.pending');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');

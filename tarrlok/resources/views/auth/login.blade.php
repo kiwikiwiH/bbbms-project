@@ -1,47 +1,115 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+@extends('layouts.tarrlok-guest')
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+@section('title', 'Login - Tarrlok')
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+@section('content')
+<main class="login-shell">
+    {{-- Branding Header --}}
+    <div class="login-brand">
+        <div class="login-brand-icon">
+            <span class="material-symbols-outlined login-brand-glyph filled">bloodtype</span>
         </div>
+        <h1 class="login-title">Tarrlok</h1>
+        <p class="login-subtitle">Blockchain-Verified Blood Traceability</p>
+    </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+    {{-- Login Card --}}
+    <div class="login-card">
+        <div class="login-card-accent"></div>
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
+        @if (session('status'))
+            <div class="login-alert ok">{{ session('status') }}</div>
+        @endif
+
+        @if ($errors->any())
+            <div class="login-alert">
+                @foreach ($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
+        @endif
+
+        <form class="login-form" method="POST" action="{{ route('login') }}">
+            @csrf
+
+            <div class="login-fields">
+                <div class="login-field">
+                    <label class="login-label" for="email">Email Address</label>
+                    <div class="login-input-wrap">
+                        <span class="material-symbols-outlined login-input-icon">mail</span>
+                        <input
+                            class="login-input"
+                            id="email"
+                            name="email"
+                            type="email"
+                            value="{{ old('email') }}"
+                            placeholder="Enter clinical ID or email"
+                            required
+                            autofocus
+                            autocomplete="username"
+                        >
+                    </div>
+                </div>
+
+                <div class="login-field">
+                    <label class="login-label" for="password">Secure Password</label>
+                    <div class="login-input-wrap">
+                        <span class="material-symbols-outlined login-input-icon">lock</span>
+                        <input
+                            class="login-input login-input-password"
+                            id="password"
                             name="password"
-                            required autocomplete="current-password" />
+                            type="password"
+                            placeholder="••••••••"
+                            required
+                            autocomplete="current-password"
+                        >
+                        <button
+                            type="button"
+                            class="login-toggle-password"
+                            data-toggle-password
+                            aria-label="Toggle password visibility"
+                        >
+                            <span class="material-symbols-outlined login-input-icon">visibility_off</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+            <button class="login-submit" type="submit">
+                <span class="material-symbols-outlined">login</span>
+                Sign In
+            </button>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
+            <div class="login-remember">
+                <input
+                    id="remember_me"
+                    name="remember"
+                    type="checkbox"
+                    {{ old('remember') ? 'checked' : '' }}
+                >
+                <label for="remember_me">Remember terminal session</label>
+            </div>
 
-        <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
+                <div class="login-forgot-bottom">
+                    <a class="login-forgot-link" href="{{ route('password.request') }}">Forgot your password?</a>
+                </div>
             @endif
+        </form>
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
+        <div class="login-register">
+            <p>
+                Unregistered clinical node?
+                <a class="login-link" href="{{ route('register') }}">Request Access</a>
+            </p>
         </div>
-    </form>
-</x-guest-layout>
+    </div>
+
+    {{-- Footer Text --}}
+    <div class="login-footer">
+        <span class="material-symbols-outlined login-footer-icon">verified_user</span>
+        System access monitored via distributed ledger.
+    </div>
+</main>
+@endsection
