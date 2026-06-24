@@ -1,0 +1,366 @@
+.hospital-page {
+  min-height: 100vh;
+  background: #f7f9fe;
+  color: #181c20;
+  font-family: Inter, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+.hospital-app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.hospital-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  height: 100vh;
+  border-right: 1px solid #e0e2e7;
+  background: #ffffff;
+  box-shadow: 2px 0 12px rgb(0 0 0 / 0.04);
+}
+
+.hospital-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 18px;
+  border-bottom: 1px solid #e6e8ed;
+  text-decoration: none;
+  color: #a20513;
+}
+
+.hospital-sidebar-brand-icon {
+  font-size: 28px;
+}
+
+.hospital-sidebar-brand-text {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.hospital-sidebar-badge {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #555f6f;
+}
+
+.hospital-facility-chip {
+  margin: 16px 14px 8px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  border: 1px solid #e4beba;
+  background: #fafbfc;
+}
+
+.hospital-facility-name {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #181c20;
+  word-break: break-word;
+}
+
+.hospital-facility-meta {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: #555f6f;
+}
+
+.hospital-sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 10px 16px;
+}
+
+.hospital-sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+  padding: 11px 12px;
+  border-radius: 6px;
+  color: #555f6f;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.hospital-sidebar-nav a:hover {
+  background: #f7f9fe;
+  color: #a20513;
+}
+
+.hospital-sidebar-nav a.active {
+  background: #ffdad6;
+  color: #a20513;
+  font-weight: 600;
+}
+
+.hospital-sidebar-nav a .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.hospital-sidebar-foot {
+  padding: 14px;
+  border-top: 1px solid #e6e8ed;
+}
+
+.hospital-sidebar-user {
+  margin-bottom: 10px;
+  font-size: 13px;
+  line-height: 18px;
+  color: #555f6f;
+}
+
+.hospital-sidebar-user strong {
+  display: block;
+  font-size: 14px;
+  color: #181c20;
+}
+
+.hospital-logout-form button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e0e2e7;
+  border-radius: 6px;
+  background: #fff;
+  color: #555f6f;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.hospital-logout-form button:hover {
+  border-color: #a20513;
+  color: #a20513;
+}
+
+.hospital-main {
+  flex: 1;
+  margin-left: 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.hospital-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 28px;
+  border-bottom: 1px solid #e0e2e7;
+  background: #ffffff;
+}
+
+.hospital-topbar-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 28px;
+}
+
+.hospital-topbar-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #555f6f;
+}
+
+.hospital-topbar-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #166534;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.hospital-content {
+  flex: 1;
+  padding: 24px 28px 40px;
+}
+
+.hospital-alert {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.hospital-alert.ok {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.hospital-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.hospital-stat {
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e0e2e7;
+  background: #fff;
+}
+
+.hospital-stat-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #555f6f;
+}
+
+.hospital-stat-value {
+  margin-top: 8px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #a20513;
+}
+
+.hospital-stat-note {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #555f6f;
+}
+
+.hospital-card {
+  border-radius: 8px;
+  border: 1px solid #e0e2e7;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 4px 24px -8px rgb(0 0 0 / 0.06);
+}
+
+.hospital-card-head {
+  padding: 18px 20px;
+  border-bottom: 1px solid #e6e8ed;
+}
+
+.hospital-card-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.hospital-card-body {
+  padding: 20px;
+}
+
+.hospital-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.hospital-detail-item dt {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #555f6f;
+}
+
+.hospital-detail-item dd {
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #181c20;
+}
+
+.hospital-placeholder {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.hospital-placeholder-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  border-radius: 50%;
+  background: #f0f4ff;
+  color: #a20513;
+}
+
+.hospital-placeholder-icon .material-symbols-outlined {
+  font-size: 32px;
+}
+
+.hospital-placeholder h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.hospital-placeholder p {
+  margin: 0;
+  font-size: 14px;
+  color: #555f6f;
+  max-width: 400px;
+  margin-inline: auto;
+}
+
+@media (max-width: 900px) {
+  .hospital-sidebar {
+    width: 72px;
+  }
+
+  .hospital-sidebar-brand-text,
+  .hospital-sidebar-badge,
+  .hospital-facility-chip,
+  .hospital-sidebar-nav span,
+  .hospital-sidebar-user,
+  .hospital-logout-form span {
+    display: none;
+  }
+
+  .hospital-sidebar-brand {
+    justify-content: center;
+    padding: 16px 8px;
+  }
+
+  .hospital-sidebar-nav a {
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .hospital-main {
+    margin-left: 72px;
+  }
+
+  .hospital-content {
+    padding: 20px 16px 32px;
+  }
+
+  .hospital-topbar {
+    padding: 16px;
+  }
+}

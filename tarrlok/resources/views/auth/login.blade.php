@@ -98,12 +98,8 @@
             @endif
         </form>
 
-        <div class="login-register">
-            <p>
-                Unregistered clinical node?
-                <a class="login-link" href="{{ route('register') }}">Request Access</a>
-            </p>
-        </div>
+        @include('auth.partials.who-can-register', ['context' => 'login'])
+
     </div>
 
     {{-- Footer Text --}}

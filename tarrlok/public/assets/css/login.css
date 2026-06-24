@@ -335,3 +335,58 @@ body {
   font-size: 16px;
   line-height: 1;
 }
+
+.access-roles-note {
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 4px;
+  border: 1px solid #e0e2e7;
+  background: #fafbfc;
+  text-align: left;
+}
+
+.access-roles-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #5b403d;
+}
+
+.access-roles-title .material-symbols-outlined {
+  font-size: 18px;
+  color: #a20513;
+}
+
+.access-roles-list {
+  margin: 0;
+  padding: 0 0 0 18px;
+  font-size: 13px;
+  line-height: 20px;
+  color: #555f6f;
+}
+
+.access-roles-list li {
+  margin-bottom: 8px;
+}
+
+.access-roles-list li:last-child {
+  margin-bottom: 0;
+}
+
+.access-roles-list strong {
+  color: #181c20;
+}
+
+.access-roles-foot {
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid #e6e8ed;
+  font-size: 12px;
+  line-height: 18px;
+  color: #555f6f;
+}

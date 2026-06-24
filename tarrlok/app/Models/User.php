@@ -43,6 +43,11 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+    public function isHospital(): bool
+    {
+        return $this->role === 'hospital';
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';

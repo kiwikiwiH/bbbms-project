@@ -98,10 +98,20 @@
 }
 
 .reg-subheading {
-  margin: 0 0 24px;
+  margin: 0 0 16px;
   font-size: 14px;
   line-height: 20px;
   color: #555f6f;
+}
+
+.reg-subheading strong {
+  color: #181c20;
+  font-weight: 600;
+}
+
+.reg-card .access-roles-note {
+  margin-top: 0;
+  margin-bottom: 24px;
 }
 
 .reg-progress-wrap {

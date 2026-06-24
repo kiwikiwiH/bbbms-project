@@ -19,7 +19,9 @@
         @include('auth.register.partials.progress', ['step' => 1, 'percent' => 25, 'label' => 'Facility Details'])
 
         <h1 class="reg-heading">Register Your Facility</h1>
-        <p class="reg-subheading">Join Ghana's blockchain-verified blood bank network. Complete your hospital details to begin.</p>
+        <p class="reg-subheading">Join Ghana's blockchain-verified blood bank network. This registration is for <strong>hospitals and blood banks only</strong>.</p>
+
+        @include('auth.partials.who-can-register', ['context' => 'register'])
 
         @if ($errors->any())
             <div class="login-alert">

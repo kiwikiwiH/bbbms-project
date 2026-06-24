@@ -30,7 +30,7 @@ class AuthenticatedSessionController extends Controller
 
         $home = $request->user()->isAdmin()
             ? route('admin.dashboard', absolute: false)
-            : route('dashboard', absolute: false);
+            : route('hospital.dashboard', absolute: false);
 
         return redirect()->intended($home);
     }

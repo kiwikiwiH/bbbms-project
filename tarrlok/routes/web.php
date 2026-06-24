@@ -1,7 +1,9 @@
 <?php
 
-use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\RegistrationReviewController;
+use App\Http\Controllers\Hospital\DashboardController as HospitalDashboardController;
+use App\Http\Controllers\Hospital\PlaceholderController as HospitalPlaceholderController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,7 +14,7 @@ Route::get('/', function () {
 
     return auth()->user()->isAdmin()
         ? redirect()->route('admin.dashboard')
-        : redirect()->route('dashboard');
+        : redirect()->route('hospital.dashboard');
 });
 
 Route::get('/dashboard', function () {
@@ -20,11 +22,19 @@ Route::get('/dashboard', function () {
         return redirect()->route('admin.dashboard');
     }
 
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+    return redirect()->route('hospital.dashboard');
+})->middleware(['auth'])->name('dashboard');
+
+Route::middleware(['auth', 'hospital'])->prefix('hospital')->name('hospital.')->group(function () {
+    Route::get('/', HospitalDashboardController::class)->name('dashboard');
+    Route::get('/inventory', [HospitalPlaceholderController::class, 'inventory'])->name('inventory');
+    Route::get('/requests', [HospitalPlaceholderController::class, 'requests'])->name('requests');
+    Route::get('/partners', [HospitalPlaceholderController::class, 'partners'])->name('partners');
+    Route::get('/facility', [HospitalPlaceholderController::class, 'facility'])->name('facility');
+});
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', DashboardController::class)->name('dashboard');
+    Route::get('/', AdminDashboardController::class)->name('dashboard');
     Route::get('/registrations', [RegistrationReviewController::class, 'index'])->name('registrations.index');
     Route::get('/registrations/{hospital}', [RegistrationReviewController::class, 'show'])->name('registrations.show');
     Route::post('/registrations/{hospital}/approve', [RegistrationReviewController::class, 'approve'])->name('registrations.approve');
