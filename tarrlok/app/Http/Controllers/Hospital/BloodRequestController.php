@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Hospital;
 use App\Http\Controllers\Controller;
 use App\Models\BloodRequest;
 use App\Models\BloodUnit;
+use App\Models\Hospital;
+use App\Services\BlockchainService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class BloodRequestController extends Controller
@@ -16,25 +19,113 @@ class BloodRequestController extends Controller
     {
         $hospital = auth()->user()->hospital;
         $search = trim((string) $request->query('q', ''));
+        $view = $request->query('view', 'incoming') === 'outgoing' ? 'outgoing' : 'incoming';
 
-        $requests = BloodRequest::query()
-            ->with('requestingHospital')
-            ->where('fulfilling_hospital_id', $hospital->id)
-            ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('request_code', 'like', "%{$search}%")
-                        ->orWhereHas('requestingHospital', fn ($h) => $h->where('name', 'like', "%{$search}%"));
+        $query = BloodRequest::query()
+            ->when($search !== '', function ($query) use ($search, $view) {
+                $query->where(function ($q) use ($search, $view) {
+                    $q->where('request_code', 'like', "%{$search}%");
+                    if ($view === 'incoming') {
+                        $q->orWhereHas('requestingHospital', fn ($h) => $h->where('name', 'like', "%{$search}%"));
+                    } else {
+                        $q->orWhereHas('fulfillingHospital', fn ($h) => $h->where('name', 'like', "%{$search}%"));
+                    }
                 });
             })
-            ->latest()
-            ->get();
+            ->latest();
+
+        if ($view === 'outgoing') {
+            $requests = (clone $query)
+                ->with('fulfillingHospital')
+                ->where('requesting_hospital_id', $hospital->id)
+                ->get();
+        } else {
+            $requests = (clone $query)
+                ->with('requestingHospital')
+                ->where('fulfilling_hospital_id', $hospital->id)
+                ->get();
+        }
 
         return view('hospital.requests.index', [
             'hospital' => $hospital,
             'requests' => $requests,
             'search' => $search,
+            'view' => $view,
             'inventoryNote' => $hospital->availableUnitsCount(),
+            'incomingPending' => $hospital->incomingBloodRequests()->whereIn('status', ['pending', 'approved'])->count(),
+            'outgoingPending' => $hospital->outgoingBloodRequests()->whereIn('status', ['pending', 'approved'])->count(),
         ]);
+    }
+
+    public function create(Request $request): View|RedirectResponse
+    {
+        $hospital = auth()->user()->hospital;
+        $partnerId = $request->integer('partner');
+
+        $partners = Hospital::query()
+            ->where('status', 'approved')
+            ->where('id', '!=', $hospital->id)
+            ->orderBy('name')
+            ->get();
+
+        if ($partners->isEmpty()) {
+            return redirect()
+                ->route('hospital.partners')
+                ->with('status', 'No partner hospitals on the network yet. Another facility must register and be approved first.');
+        }
+
+        $selectedPartner = $partnerId
+            ? $partners->firstWhere('id', $partnerId)
+            : null;
+
+        if ($partnerId && ! $selectedPartner) {
+            return redirect()
+                ->route('hospital.requests.create')
+                ->withErrors(['partner' => 'That partner hospital is not available.']);
+        }
+
+        return view('hospital.requests.create', [
+            'hospital' => $hospital,
+            'partners' => $partners,
+            'selectedPartner' => $selectedPartner,
+            'bloodGroups' => config('tarrlok.blood_groups'),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $hospital = auth()->user()->hospital;
+
+        $validated = $request->validate([
+            'fulfilling_hospital_id' => [
+                'required',
+                'integer',
+                Rule::exists('hospitals', 'id')->where('status', 'approved'),
+                Rule::notIn([$hospital->id]),
+            ],
+            'blood_group' => ['required', 'string', 'in:'.implode(',', config('tarrlok.blood_groups'))],
+            'quantity' => ['required', 'integer', 'min:1', 'max:50'],
+            'urgency' => ['required', 'in:emergency,routine'],
+        ]);
+
+        $partner = Hospital::query()
+            ->where('id', $validated['fulfilling_hospital_id'])
+            ->where('status', 'approved')
+            ->where('id', '!=', $hospital->id)
+            ->firstOrFail();
+
+        $bloodRequest = BloodRequest::create([
+            'requesting_hospital_id' => $hospital->id,
+            'fulfilling_hospital_id' => $partner->id,
+            'blood_group' => $validated['blood_group'],
+            'quantity' => $validated['quantity'],
+            'urgency' => $validated['urgency'],
+            'status' => 'pending',
+        ]);
+
+        return redirect()
+            ->route('hospital.requests', ['view' => 'outgoing'])
+            ->with('status', 'Request '.$bloodRequest->request_code.' sent to '.$partner->name.'.');
     }
 
     public function approve(BloodRequest $bloodRequest): RedirectResponse
@@ -90,7 +181,7 @@ class BloodRequestController extends Controller
 
         if ($hospital->availableUnitsCount($bloodRequest->blood_group) < $bloodRequest->quantity) {
             return back()->withErrors([
-                'stock' => 'Not enough '.$bloodRequest->blood_group.' units in inventory. Blood must be recorded by lab staff first (Blood Inventory).',
+                'stock' => 'Not enough cleared '.$bloodRequest->blood_group.' units in inventory. Lab staff must register units and complete screening first.',
             ]);
         }
 
@@ -108,8 +199,24 @@ class BloodRequestController extends Controller
                 throw new \RuntimeException('insufficient_stock');
             }
 
+            $blockchain = app(BlockchainService::class);
+
             foreach ($units as $unit) {
-                $unit->update(['status' => 'issued']);
+                $unit->update([
+                    'hospital_id' => $bloodRequest->requesting_hospital_id,
+                    'status' => 'available',
+                ]);
+
+                $txHash = $blockchain->recordIssue(
+                    $unit->unit_code,
+                    $hospital->id,
+                    $bloodRequest->requesting_hospital_id,
+                    $bloodRequest->request_code
+                );
+
+                if ($txHash) {
+                    $unit->update(['blockchain_issue_tx' => $txHash]);
+                }
             }
 
             $bloodRequest->bloodUnits()->syncWithoutDetaching($units->pluck('id'));
@@ -119,7 +226,9 @@ class BloodRequestController extends Controller
             ]);
         });
 
-        return back()->with('status', $bloodRequest->request_code.' fulfilled — '.$bloodRequest->quantity.' unit(s) issued from your inventory.');
+        $bloodRequest->loadMissing('requestingHospital');
+
+        return back()->with('status', $bloodRequest->request_code.' fulfilled — '.$bloodRequest->quantity.' unit(s) transferred to '.$bloodRequest->requestingHospital->name.'.');
     }
 
     private function ensureIncoming(BloodRequest $bloodRequest): void

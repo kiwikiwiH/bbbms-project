@@ -3,6 +3,13 @@
 return [
     'blood_groups' => ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
 
+    'screening_tests' => [
+        'screening_hiv' => 'HIV',
+        'screening_hep_b' => 'Hepatitis B',
+        'screening_hep_c' => 'Hepatitis C',
+        'screening_syphilis' => 'Syphilis',
+    ],
+
     'institution_types' => [
         'teaching' => 'Teaching Hospital',
         'regional' => 'Regional Hospital',

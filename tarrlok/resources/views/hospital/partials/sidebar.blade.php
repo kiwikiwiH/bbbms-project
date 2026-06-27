@@ -28,13 +28,17 @@
             <span class="material-symbols-outlined">inventory_2</span>
             <span>Blood Inventory</span>
         </a>
-        <a href="{{ route('hospital.requests') }}" @class(['active' => $route === 'hospital.requests']) title="Blood Requests">
+        <a href="{{ route('hospital.requests') }}" @class(['active' => str_starts_with($route ?? '', 'hospital.requests')]) title="Blood Requests">
             <span class="material-symbols-outlined">bloodtype</span>
             <span>Blood Requests</span>
         </a>
         <a href="{{ route('hospital.partners') }}" @class(['active' => $route === 'hospital.partners']) title="Partner Exchange">
             <span class="material-symbols-outlined">swap_horiz</span>
             <span>Partner Exchange</span>
+        </a>
+        <a href="{{ route('hospital.trace') }}" @class(['active' => str_starts_with($route ?? '', 'hospital.trace')]) title="Trace Unit">
+            <span class="material-symbols-outlined">timeline</span>
+            <span>Trace Unit</span>
         </a>
         <a href="{{ route('hospital.facility') }}" @class(['active' => $route === 'hospital.facility']) title="Facility Profile">
             <span class="material-symbols-outlined">local_hospital</span>
@@ -50,6 +54,7 @@
         <div class="hospital-sidebar-user">
             <strong>{{ $user->name }}</strong>
             {{ $user->job_title ?? 'Administrator' }}
+            <a href="{{ route('profile.edit') }}" style="display:block;margin-top:6px;font-size:12px;color:#a20513;">Profile</a>
         </div>
         <form class="hospital-logout-form" method="POST" action="{{ route('logout') }}">
             @csrf

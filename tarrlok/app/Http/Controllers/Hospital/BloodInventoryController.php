@@ -12,7 +12,7 @@ class BloodInventoryController extends Controller
         $hospital = auth()->user()->hospital;
 
         $units = $hospital->bloodUnits()
-            ->with('recorder')
+            ->with(['recorder', 'screener'])
             ->latest('collected_at')
             ->get()
             ->groupBy('blood_group');

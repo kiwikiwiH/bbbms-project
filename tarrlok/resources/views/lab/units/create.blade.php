@@ -8,7 +8,7 @@
 @endsection
 
 @section('content')
-<div class="hospital-card" style="max-width:520px;">
+<div class="hospital-card" style="max-width:580px;">
     <div class="hospital-card-head">
         <h2 class="hospital-card-title">New unit</h2>
     </div>
@@ -24,38 +24,77 @@
         <form class="hospital-form" method="POST" action="{{ route('lab.units.store') }}">
             @csrf
 
-            <div class="hospital-field">
-                <label class="hospital-label" for="blood_group">Blood group</label>
-                <select class="hospital-input" id="blood_group" name="blood_group" required>
-                    <option value="" disabled {{ old('blood_group') ? '' : 'selected' }}>Select group</option>
+            <fieldset class="hospital-field blood-group-field">
+                <legend class="hospital-label">Blood group</legend>
+                <p class="hospital-field-hint">Select the verified blood type for this unit.</p>
+                <div class="blood-group-grid" role="radiogroup" aria-label="Blood group">
                     @foreach ($bloodGroups as $group)
-                        <option value="{{ $group }}" @selected(old('blood_group') === $group)>{{ $group }}</option>
+                        @php
+                            $isRhNeg = str_ends_with($group, '-');
+                        @endphp
+                        <label class="blood-group-option">
+                            <input
+                                type="radio"
+                                name="blood_group"
+                                value="{{ $group }}"
+                                @checked(old('blood_group') === $group)
+                                @if ($loop->first) required @endif
+                            >
+                            <span @class(['blood-group-btn', 'blood-group-btn-neg' => $isRhNeg])>
+                                <span class="material-symbols-outlined blood-group-icon filled">bloodtype</span>
+                                <span class="blood-group-label">{{ $group }}</span>
+                            </span>
+                        </label>
                     @endforeach
-                </select>
-            </div>
+                </div>
+            </fieldset>
 
-            <div class="hospital-field">
+            <div class="hospital-field hospital-date-field">
                 <label class="hospital-label" for="collected_at">Collection date</label>
-                <input
-                    class="hospital-input"
-                    id="collected_at"
-                    name="collected_at"
-                    type="date"
-                    value="{{ old('collected_at', now()->toDateString()) }}"
-                    max="{{ now()->toDateString() }}"
-                    required
-                >
-                <p class="hospital-field-hint">Date the unit was collected and cleared for storage.</p>
+                <p class="hospital-field-hint">When the unit was collected and cleared for storage.</p>
+                <div class="hospital-date-row">
+                    <div class="hospital-input-wrap">
+                        <span class="material-symbols-outlined hospital-input-icon" aria-hidden="true">calendar_today</span>
+                        <input
+                            class="hospital-input hospital-date-input"
+                            id="collected_at"
+                            name="collected_at"
+                            type="date"
+                            value="{{ old('collected_at', now()->toDateString()) }}"
+                            max="{{ now()->toDateString() }}"
+                            required
+                        >
+                    </div>
+                    <button type="button" class="hospital-date-today" id="collected_at_today">
+                        <span class="material-symbols-outlined">today</span>
+                        Today
+                    </button>
+                </div>
             </div>
 
             <div class="hospital-form-actions">
                 <a href="{{ route('lab.dashboard') }}" class="hospital-btn hospital-btn-outline">Cancel</a>
                 <button type="submit" class="hospital-btn hospital-btn-primary">
                     <span class="material-symbols-outlined">check</span>
-                    Register unit
+                    Register &amp; screen
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+<p class="hospital-flow-note">
+    <span class="material-symbols-outlined">info</span>
+    After registration you will complete a <strong>lab screening report</strong>. Only cleared units appear in hospital inventory.
+</p>
+
+@push('scripts')
+<script>
+    document.getElementById('collected_at_today')?.addEventListener('click', function () {
+        const input = document.getElementById('collected_at');
+        if (!input) return;
+        input.value = new Date().toISOString().slice(0, 10);
+    });
+</script>
+@endpush
 @endsection

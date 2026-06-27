@@ -16,6 +16,7 @@ class DashboardController extends Controller
             'user' => $user,
             'hospital' => $hospital,
             'availableCount' => $hospital->availableUnitsCount(),
+            'pendingScreening' => $hospital->bloodUnits()->pendingScreening()->count(),
             'recordedByYou' => $hospital->bloodUnits()->where('recorded_by', $user->id)->count(),
             'issuedCount' => $hospital->bloodUnits()->where('status', 'issued')->count(),
         ]);

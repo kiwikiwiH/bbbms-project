@@ -28,9 +28,13 @@
             <span class="material-symbols-outlined">add_circle</span>
             <span>Register unit</span>
         </a>
-        <a href="{{ route('lab.units.index') }}" @class(['active' => $route === 'lab.units.index']) title="Inventory">
+        <a href="{{ route('lab.units.index') }}" @class(['active' => str_starts_with($route ?? '', 'lab.units')]) title="Inventory">
             <span class="material-symbols-outlined">inventory_2</span>
             <span>Inventory</span>
+        </a>
+        <a href="{{ route('lab.trace') }}" @class(['active' => str_starts_with($route ?? '', 'lab.trace')]) title="Trace Unit">
+            <span class="material-symbols-outlined">timeline</span>
+            <span>Trace Unit</span>
         </a>
     </nav>
 
@@ -38,6 +42,7 @@
         <div class="hospital-sidebar-user">
             <strong>{{ $user->name }}</strong>
             Lab staff
+            <a href="{{ route('profile.edit') }}" style="display:block;margin-top:6px;font-size:12px;color:#a20513;">Profile</a>
         </div>
         <form class="hospital-logout-form" method="POST" action="{{ route('logout') }}">
             @csrf
