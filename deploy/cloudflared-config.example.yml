@@ -1,0 +1,14 @@
+# Copy to %USERPROFILE%\.cloudflared\config.yml (or pass with --config)
+# Replace TUNNEL_ID, credentials path, hostname, and local service URL.
+
+tunnel: TUNNEL_ID
+credentials-file: C:\Users\YOUR_USER\.cloudflared\TUNNEL_ID.json
+
+ingress:
+  # Public hostname → local Laravel (artisan serve on 8080)
+  - hostname: tarrlok.tesnet.xyz
+    service: http://127.0.0.1:8080
+  # Or Apache on port 80:
+  # - hostname: tarrlok.tesnet.xyz
+  #   service: http://127.0.0.1:80
+  - service: http_status:404

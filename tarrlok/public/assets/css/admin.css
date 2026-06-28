@@ -423,3 +423,83 @@
   border-top: 1px solid #e6e8ed;
   background: #fafbfc;
 }
+
+.admin-blockchain-health {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 24px;
+  padding: 18px 20px;
+  border-radius: 8px;
+  border: 1px solid #e0e2e7;
+  background: #fff;
+}
+
+.admin-blockchain-health-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.admin-blockchain-health p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #555f6f;
+  line-height: 1.5;
+}
+
+.admin-blockchain-health-healthy {
+  border-color: #bbf7d0;
+  background: #ecfdf5;
+}
+
+.admin-blockchain-health-healthy .admin-blockchain-health-icon {
+  color: #166534;
+}
+
+.admin-blockchain-health-degraded,
+.admin-blockchain-health-offline {
+  border-color: #ffd8a8;
+  background: #fff4e5;
+}
+
+.admin-blockchain-health-degraded .admin-blockchain-health-icon,
+.admin-blockchain-health-offline .admin-blockchain-health-icon {
+  color: #e65100;
+}
+
+.admin-blockchain-health-disabled {
+  border-color: #e4beba;
+  background: #fff8f7;
+}
+
+.admin-blockchain-health-disabled .admin-blockchain-health-icon {
+  color: #93000a;
+}
+
+.admin-tx-hash {
+  font-size: 12px;
+  word-break: break-all;
+  color: #5b403d;
+  background: #fafbfc;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.admin-tx-missing {
+  color: #9aa0a9;
+}
+
+.admin-blockchain-errors {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.admin-blockchain-flow {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.7;
+}
+
+.admin-blockchain-flow code {
+  font-size: 12px;
+}

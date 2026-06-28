@@ -27,6 +27,7 @@ class BloodInventoryController extends Controller
             'hospital' => $hospital,
             'units' => $units,
             'availableByGroup' => $availableByGroup,
+            'expiringSoon' => $hospital->bloodUnits()->where('status', 'available')->expiringSoon()->get(),
         ]);
     }
 }

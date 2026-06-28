@@ -7,6 +7,7 @@ use App\Models\BloodRequest;
 use App\Models\BloodUnit;
 use App\Models\Hospital;
 use App\Services\BlockchainService;
+use App\Services\DonorNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -217,6 +218,8 @@ class BloodRequestController extends Controller
                 if ($txHash) {
                     $unit->update(['blockchain_issue_tx' => $txHash]);
                 }
+
+                app(DonorNotificationService::class)->notifyStatusChange($unit->fresh(), 'issued');
             }
 
             $bloodRequest->bloodUnits()->syncWithoutDetaching($units->pluck('id'));

@@ -10,4 +10,8 @@
         <span class="material-symbols-outlined">clinical_notes</span>
         Facility Registrations
     </a>
+    <a href="{{ route('admin.blockchain') }}" @class(['active' => $route === 'admin.blockchain'])>
+        <span class="material-symbols-outlined">link</span>
+        Blockchain
+    </a>
 </nav>

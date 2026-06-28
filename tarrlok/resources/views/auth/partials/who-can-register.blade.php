@@ -19,9 +19,13 @@
             — Accounts are issued by your hospital administrator after your facility is approved.
         </li>
         <li>
+            <strong>Blood donors</strong>
+            — No login needed. Use the <a class="login-link" href="{{ route('track.index') }}">unit ID</a> on your donation slip to track that donation only (no access to other donors' units).
+        </li>
+        <li>
             <strong>Platform administrators</strong>
             — Tarrlok operations team only. No public registration.
         </li>
     </ul>
-    <p class="access-roles-foot">Blood donors do not need a login — donations are recorded in person by hospital and lab staff.</p>
+    <p class="access-roles-foot">Donations are recorded by lab staff. Donors track a single unit with the ID printed at registration.</p>
 </div>

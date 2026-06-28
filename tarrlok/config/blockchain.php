@@ -11,4 +11,6 @@ return [
     'project_root' => dirname(base_path()),
 
     'anchor_script' => 'blockchain/scripts/anchor-event.js',
+
+    'status_script' => 'blockchain/scripts/chain-status.js',
 ];

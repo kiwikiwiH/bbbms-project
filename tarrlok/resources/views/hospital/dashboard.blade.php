@@ -27,7 +27,39 @@
         <div class="hospital-stat-value" style="font-size:16px;">{{ $hospital->license_id }}</div>
         <div class="hospital-stat-note">Verified by Tarrlok</div>
     </div>
+    @if ($expiringSoon > 0 || $expiredCount > 0)
+        <div class="hospital-stat hospital-stat-warning">
+            <div class="hospital-stat-label">Expiry alerts</div>
+            <div class="hospital-stat-value">{{ $expiringSoon + $expiredCount }}</div>
+            <div class="hospital-stat-note">
+                @if ($expiringSoon > 0)
+                    {{ $expiringSoon }} expiring soon
+                @endif
+                @if ($expiredCount > 0)
+                    · {{ $expiredCount }} expired
+                @endif
+            </div>
+        </div>
+    @endif
 </div>
+
+@if ($expiringSoon > 0 || $expiredCount > 0)
+    <div class="hospital-card hospital-expiry-alert" style="margin-bottom:20px;">
+        <div class="hospital-card-body">
+            <p class="hospital-flow-note" style="margin:0;">
+                <span class="material-symbols-outlined">event_busy</span>
+                <strong>Shelf-life check:</strong>
+                @if ($expiringSoon > 0)
+                    {{ $expiringSoon }} cleared unit{{ $expiringSoon === 1 ? '' : 's' }} expire within {{ config('tarrlok.expiry_warning_days', 7) }} days.
+                @endif
+                @if ($expiredCount > 0)
+                    {{ $expiredCount }} unit{{ $expiredCount === 1 ? ' is' : 's are' }} past expiry and should be discarded.
+                @endif
+                <a href="{{ route('hospital.inventory') }}" style="color:#a20513;">Review inventory</a>
+            </p>
+        </div>
+    </div>
+@endif
 
 <div class="hospital-card">
     <div class="hospital-card-head">

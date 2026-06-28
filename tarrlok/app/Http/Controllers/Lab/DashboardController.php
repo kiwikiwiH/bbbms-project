@@ -19,6 +19,8 @@ class DashboardController extends Controller
             'pendingScreening' => $hospital->bloodUnits()->pendingScreening()->count(),
             'recordedByYou' => $hospital->bloodUnits()->where('recorded_by', $user->id)->count(),
             'issuedCount' => $hospital->bloodUnits()->where('status', 'issued')->count(),
+            'expiringSoon' => $hospital->bloodUnits()->where('status', 'available')->expiringSoon()->count(),
+            'expiredCount' => $hospital->bloodUnits()->where('status', 'available')->expired()->count(),
         ]);
     }
 }

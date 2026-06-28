@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\BloodUnit;
+use App\Models\Donor;
 use App\Models\Hospital;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -86,19 +87,35 @@ class DemoSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
+        $demoDonor = Donor::create([
+            'donor_code' => Donor::generateDonorCode(),
+            'name' => 'Akosua Donkor',
+            'phone' => '+233244555123',
+            'email' => 'akosua.donor@example.com',
+            'blood_group' => 'O+',
+            'registered_at_hospital_id' => $ridge->id,
+            'tracking_consent' => true,
+            'last_donation_at' => now()->subDays(5),
+        ]);
+
         $groups = ['O+', 'O+', 'A+', 'B+', 'AB+'];
+        $collectedOffsets = [30, 5, 4, 3, 2];
 
         foreach ($groups as $index => $group) {
+            $collectedAt = now()->subDays($collectedOffsets[$index]);
+
             BloodUnit::create([
                 'hospital_id' => $ridge->id,
+                'donor_id' => $demoDonor->id,
                 'unit_code' => sprintf('UNIT-%03d-%05d', $ridge->id, $index + 1),
                 'blood_group' => $group,
                 'status' => 'available',
                 'screening_status' => 'cleared',
                 'recorded_by' => $ridgeLab->id,
                 'screened_by' => $ridgeLab->id,
-                'collected_at' => now()->subDays(5 - $index),
-                'screened_at' => now()->subDays(4 - $index),
+                'collected_at' => $collectedAt,
+                'expires_at' => BloodUnit::calculateExpiresAt($collectedAt),
+                'screened_at' => $collectedAt->copy()->addDay(),
                 'screening_hiv' => true,
                 'screening_hep_b' => true,
                 'screening_hep_c' => true,
@@ -116,5 +133,6 @@ class DemoSeeder extends Seeder
                 ['Ridge lab', 'kofi.boateng@ridge.gov.gh', 'RidgeLab2024!'],
             ]
         );
+        $this->command?->info('Donor tracking demo: open /track and enter UNIT-002-00001 (no login).');
     }
 }

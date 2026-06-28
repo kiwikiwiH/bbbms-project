@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Lab;
 use App\Http\Controllers\Controller;
 use App\Models\BloodUnit;
 use App\Services\BlockchainService;
+use App\Services\DonorNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -74,6 +75,8 @@ class BloodScreeningController extends Controller
                 $bloodUnit->update(['blockchain_screening_tx' => $txHash]);
             }
 
+            app(DonorNotificationService::class)->notifyStatusChange($bloodUnit, 'screening_cleared');
+
             return redirect()
                 ->route('lab.units.index')
                 ->with('status', $bloodUnit->unit_code.' cleared for inventory — all screening non-reactive.');
@@ -92,6 +95,8 @@ class BloodScreeningController extends Controller
         if ($txHash) {
             $bloodUnit->update(['blockchain_screening_tx' => $txHash]);
         }
+
+        app(DonorNotificationService::class)->notifyStatusChange($bloodUnit, 'screening_failed');
 
         return redirect()
             ->route('lab.units.index')

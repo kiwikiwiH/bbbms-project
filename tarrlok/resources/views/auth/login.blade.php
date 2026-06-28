@@ -98,6 +98,10 @@
             @endif
         </form>
 
+        <div class="login-forgot-bottom" style="margin-top:16px;">
+            <a class="login-forgot-link" href="{{ route('track.index') }}">Blood donor? Track your donation by unit ID</a>
+        </div>
+
         @include('auth.partials.who-can-register', ['context' => 'login'])
 
     </div>

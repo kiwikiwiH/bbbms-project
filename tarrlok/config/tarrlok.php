@@ -10,6 +10,10 @@ return [
         'screening_syphilis' => 'Syphilis',
     ],
 
+    'blood_shelf_life_days' => 35,
+    'expiry_warning_days' => 7,
+    'min_donation_interval_days' => 56,
+
     'institution_types' => [
         'teaching' => 'Teaching Hospital',
         'regional' => 'Regional Hospital',

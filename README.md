@@ -10,9 +10,9 @@
 
 | Layer | Role |
 |-------|------|
-| **Laravel + MySQL** | Day-to-day operations — users, inventory, screening, partner requests |
+| **Laravel + MySQL** | Day-to-day operations — users, inventory, screening, partner requests, expiry |
 | **Solidity + Hardhat** | Tamper-evident audit log — registration, screening, partner issue |
-| **Trace page** | Full unit lifecycle in the database + on-chain transaction hashes |
+| **Trace / Track** | Unit lifecycle in the database + on-chain transaction hashes |
 
 MySQL is the **operational database**. The blockchain is an **audit trail** — events cannot be altered once mined.
 
@@ -28,6 +28,7 @@ MySQL is the **operational database**. The blockchain is an **audit trail** — 
 | Database | **MySQL** (recommended) or **SQLite** |
 | Blockchain | **Hardhat** + `BloodBank.sol` + Laravel `BlockchainService` |
 | Local chain | Hardhat node (`http://127.0.0.1:8545`) |
+| Public access (optional) | **Cloudflare Tunnel** — see [deploy guide](docs/DEPLOY-LOCAL-CLOUDFLARE.md) |
 
 ---
 
@@ -58,7 +59,7 @@ Laravel (controllers + models)
 | Screening cleared/failed | `recordScreening()` | `UnitScreened` |
 | Partner issue | `recordIssue()` | `UnitIssued` |
 
-Transaction hashes are saved on `blood_units` and shown on **Trace Unit**.
+Transaction hashes are saved on `blood_units` and shown on **Trace Unit**, **public `/track`**, and **Admin → Blockchain**.
 
 ---
 
@@ -70,24 +71,31 @@ bbbms-project/
 │   ├── contracts/BloodBank.sol
 │   ├── scripts/deploy.js
 │   ├── scripts/anchor-event.js
-│   ├── deployments/local.json     # Created after deploy
+│   ├── scripts/chain-status.js    # Admin chain health probe
+│   ├── deployments/local.json       # Created after deploy
 │   └── README.md
+├── deploy/
+│   └── cloudflared-config.example.yml
+├── docs/
+│   └── DEPLOY-LOCAL-CLOUDFLARE.md # Local server + Cloudflare Tunnel
+├── apache/
+│   └── README.md                  # Apache vhost (tarrlok.localhost)
 ├── tarrlok/                       # Laravel application
 │   ├── app/
-│   │   ├── Http/Controllers/      # Admin, Hospital, Lab, Auth
-│   │   ├── Models/                # User, Hospital, BloodUnit, BloodRequest
-│   │   └── Services/BlockchainService.php
-│   ├── config/tarrlok.php         # Ghana regions, blood groups, screening tests
+│   │   ├── Http/Controllers/      # Admin, Hospital, Lab, DonationTrack
+│   │   ├── Models/                # User, Hospital, Donor, BloodUnit, BloodRequest
+│   │   └── Services/              # BlockchainService, BlockchainStatusService
+│   ├── config/tarrlok.php         # Regions, blood groups, shelf life
 │   ├── config/blockchain.php
-│   ├── database/migrations/
 │   ├── database/seeders/          # AdminSeeder, DemoSeeder
-│   ├── public/assets/css/         # Tarrlok UI styles
+│   ├── public/assets/css/
 │   └── resources/views/
-│       ├── auth/                  # Login, register, forgot/reset password
-│       ├── admin/                 # Platform admin
+│       ├── admin/                 # Platform admin + blockchain dashboard
+│       ├── auth/                  # Login, hospital register, password reset
 │       ├── hospital/              # Hospital portal
 │       ├── lab/                   # Lab portal
-│       └── shared/trace/          # Unit trace page
+│       ├── track/                 # Public donor tracking by unit ID
+│       └── shared/trace/          # Staff unit trace page
 └── README.md
 ```
 
@@ -144,7 +152,8 @@ This creates:
 
 - Platform admin (from `.env`)
 - Demo hospitals **Korle Bu** and **Ridge** with lab accounts
-- **5 cleared blood units** at Ridge Hospital (ready for partner requests)
+- **5 cleared blood units** at Ridge (linked to a demo donor record; one unit expiring soon)
+- Demo donor phone on file — tracking uses **unit ID**, not a login
 
 For a completely fresh database:
 
@@ -156,13 +165,17 @@ php artisan migrate:fresh --seed
 
 ### 3. Run Laravel
 
+**Option A — built-in server:**
+
 ```bash
 php artisan serve
 ```
 
 Open **http://127.0.0.1:8000**
 
-> Run only **one** `php artisan serve` on port 8000.
+**Option B — Apache** (this machine): see [`apache/README.md`](apache/README.md) — **http://tarrlok.localhost**
+
+> Run only **one** web server on your chosen port.
 
 ### 4. Blockchain (optional but recommended for full demo)
 
@@ -190,7 +203,9 @@ BLOCKCHAIN_RPC_URL=http://127.0.0.1:8545
 BLOCKCHAIN_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d3255bf239959da31d71ebff6b2c5c3f809b40
 ```
 
-If the chain is down, Tarrlok still works — anchoring is skipped and no tx hashes appear on trace.
+Then: `php artisan config:clear`
+
+If the chain is down, Tarrlok still works — anchoring is skipped and no tx hashes appear on trace/track.
 
 See [`blockchain/README.md`](blockchain/README.md) for details.
 
@@ -205,6 +220,8 @@ See [`blockchain/README.md`](blockchain/README.md) for details.
 | Korle Bu lab | `ama.osei@korlebu.gov.gh` | `KorleBuLab2024!` |
 | Ridge admin (supplier) | `efua.adjei@ridge.gov.gh` | `Ridge2024!` |
 | Ridge lab | `kofi.boateng@ridge.gov.gh` | `RidgeLab2024!` |
+
+**Donor tracking (no login):** open `/track` and enter `UNIT-002-00001` after seeding demo data.
 
 Platform admin credentials are configurable in `.env`:
 
@@ -224,7 +241,9 @@ Sync after changes: `php artisan db:seed --class=AdminSeeder`
 
 | URL | Purpose |
 |-----|---------|
-| `/login` | Sign in |
+| `/login` | Sign in (hospital, lab, admin) |
+| `/track` | **Public** — track one donation by unit ID (no login) |
+| `/track/{unitCode}` | Direct link to a unit’s donor-safe status page |
 | `/register` | 3-step hospital registration wizard |
 | `/register/pending` | Post-submission confirmation |
 | `/forgot-password` | Request password reset link |
@@ -235,6 +254,7 @@ Sync after changes: `php artisan db:seed --class=AdminSeeder`
 | URL | Purpose |
 |-----|---------|
 | `/admin` | Overview & pending registrations |
+| `/admin/blockchain` | **Chain health**, contract info, anchor stats, recent tx hashes |
 | `/admin/registrations` | List / filter hospital registrations |
 | `/admin/registrations/{hospital}` | Approve or reject a facility |
 
@@ -242,8 +262,8 @@ Sync after changes: `php artisan db:seed --class=AdminSeeder`
 
 | URL | Purpose |
 |-----|---------|
-| `/hospital` | Dashboard |
-| `/hospital/inventory` | Blood inventory (cleared units only) |
+| `/hospital` | Dashboard (includes expiry alerts) |
+| `/hospital/inventory` | Blood inventory (cleared, non-expired units) |
 | `/hospital/requests` | Incoming / outgoing partner requests |
 | `/hospital/requests/create` | Request blood from a partner |
 | `/hospital/partners` | Browse approved partner hospitals |
@@ -255,9 +275,9 @@ Sync after changes: `php artisan db:seed --class=AdminSeeder`
 
 | URL | Purpose |
 |-----|---------|
-| `/lab` | Lab dashboard |
+| `/lab` | Lab dashboard (includes expiry alerts) |
 | `/lab/units` | Units at this hospital |
-| `/lab/units/create` | Register a new unit |
+| `/lab/units/create` | Register unit + link donor by phone |
 | `/lab/units/{unit}/screening` | Lab screening report |
 | `/lab/trace` | Trace a unit by ID |
 
@@ -267,10 +287,10 @@ Sync after changes: `php artisan db:seed --class=AdminSeeder`
 
 | Role | Access |
 |------|--------|
-| **admin** | Approve/reject hospital registrations |
+| **admin** | Approve/reject hospitals; **blockchain monitoring** |
 | **hospital** | Inventory, partner requests, lab staff, trace |
-| **lab** | Register units, complete screening, trace |
-| **donor** | Not implemented — donations recorded by lab staff |
+| **lab** | Register units (with donor phone), screening, trace |
+| **Public donor** | No login — `/track` with unit ID only (one unit per lookup) |
 
 Login redirects: **admin** → `/admin`, **hospital** → `/hospital`, **lab** → `/lab`.
 
@@ -279,12 +299,15 @@ Login redirects: **admin** → `/admin`, **hospital** → `/hospital`, **lab** �
 ## Blood workflow
 
 ```
-Lab registers unit       →  quarantine, screening: pending
+Lab registers unit       →  quarantine, screening: pending (donor linked by phone)
+                         →  expires_at set (35-day shelf life)
 Lab screening report     →  cleared → available  |  failed → discarded
-Hospital inventory       →  only cleared + available units count as stock
-Partner request (outgoing) → blood_requests: pending
+Hospital inventory       →  only cleared + available + not expired units count as stock
+Partner request          →  blood_requests: pending
 Partner approve + issue  →  FIFO; units transfer to requesting hospital
-Trace unit               →  timeline + blockchain tx hashes
+Trace unit (staff)       →  full timeline + blockchain tx hashes
+Donor track (public)     →  /track + unit ID — donor-safe view, no patient data
+Daily expiry job         →  php artisan blood:mark-expired (also scheduled daily)
 ```
 
 **Unit statuses:** `quarantine` → `available` (after screening) → transferred to partner as `available`, or `discarded`.
@@ -293,30 +316,45 @@ Trace unit               →  timeline + blockchain tx hashes
 
 **Request statuses:** `pending` → `approved` → `fulfilled`, or `rejected`.
 
-**Unit codes:** auto-generated as `UNIT-{hospitalId}-{sequence}` (e.g. `UNIT-002-00001`).
+**Unit codes:** auto-generated as `UNIT-{hospitalId}-{sequence}` (e.g. `UNIT-002-00001`). Lab staff give this ID to donors for `/track`.
 
 ---
 
 ## Full demo script (viva / presentation)
 
-Requires blockchain terminals + `php artisan serve` running.
+Requires blockchain terminals + web server running.
 
-1. **Ridge admin** — log in → **Blood Inventory** — confirm cleared units exist
-2. **Korle Bu admin** — **Partner Exchange** → request O+ from Ridge Hospital
-3. **Ridge admin** — **Blood Requests → Incoming** → Approve → **Issue unit**
-4. **Korle Bu admin** — **Blood Inventory** — units received; **Outgoing** = fulfilled
-5. **Either hospital** — **Trace Unit** → search `UNIT-002-00001`
-   - Lifecycle timeline
-   - **Blockchain audit trail** with tx hashes (if chain is running)
+1. **Platform admin** — `/admin/blockchain` — confirm chain health (or note offline)
+2. **Ridge admin** — **Blood Inventory** — confirm cleared units exist
+3. **Korle Bu admin** — **Partner Exchange** → request O+ from Ridge Hospital
+4. **Ridge admin** — **Blood Requests → Incoming** → Approve → **Issue unit**
+5. **Korle Bu admin** — **Blood Inventory** — units received
+6. **Public** — `/track` → `UNIT-002-00001` — timeline + blockchain hashes
+7. **Either hospital** — **Trace Unit** — staff view of same unit
 
 ### Verify blockchain is working
 
 | Check | Expected |
 |-------|----------|
-| Trace page | “Blockchain audit trail” with `0x…` hashes |
+| Admin → Blockchain | Status **healthy**, block number, contract address |
+| Trace / Track page | “Blockchain verification” with `0x…` hashes |
 | Hardhat node terminal | New mined transactions on register/screen/issue |
 | `blood_units` table | `blockchain_register_tx`, `blockchain_screening_tx`, `blockchain_issue_tx` populated |
-| `storage/logs/laravel.log` | `Blockchain anchor` warnings only if chain is down |
+
+---
+
+## Deploy on a local server + Cloudflare Tunnel
+
+Expose the app publicly without router port-forwarding:
+
+1. Run Laravel on the server (Apache or `php artisan serve`)
+2. Run Hardhat node + deploy on the **same server** (blockchain stays on `127.0.0.1:8545` — not tunneled)
+3. Point **cloudflared** at your local web port
+4. Set `APP_URL=https://your-subdomain.yourdomain.com`
+
+Full guide: **[docs/DEPLOY-LOCAL-CLOUDFLARE.md](docs/DEPLOY-LOCAL-CLOUDFLARE.md)**
+
+Example config: **[deploy/cloudflared-config.example.yml](deploy/cloudflared-config.example.yml)**
 
 ---
 
@@ -326,7 +364,8 @@ Requires blockchain terminals + `php artisan serve` running.
 |-------|---------|
 | `hospitals` | Registered facilities (pending / approved / rejected) |
 | `users` | Accounts — roles: admin, hospital, lab |
-| `blood_units` | Units per hospital + screening + blockchain tx hashes |
+| `donors` | Donor profiles (phone, eligibility); linked when lab registers units |
+| `blood_units` | Units + donor + expiry + screening + blockchain tx hashes |
 | `blood_requests` | Partner exchange requests |
 | `blood_request_unit` | Which units were issued for a request |
 
@@ -337,20 +376,22 @@ Requires blockchain terminals + `php artisan serve` running.
 - [x] Tarrlok-branded login, registration, forgot/reset password, profile
 - [x] 3-step hospital registration (Ghana regions, HeFRA license)
 - [x] Platform admin — approve / reject registrations
+- [x] **Admin blockchain dashboard** — chain health, anchor stats, recent tx log
 - [x] Hospital portal — inventory, requests, partners, lab staff, facility, trace
-- [x] Lab portal — register units, screening reports, inventory
+- [x] Lab portal — register units (donor phone lookup), screening, inventory
 - [x] Lab screening — quarantine → cleared/failed; only cleared units issuable
 - [x] Partner exchange + incoming/outgoing blood requests
 - [x] Approve, reject (with reason), issue — FIFO, units transfer to requester
 - [x] Unit trace — lifecycle timeline + blockchain tx hashes
+- [x] **Public donor tracking** — `/track` by unit ID (one unit, no login)
+- [x] Blood expiry — shelf-life, dashboard alerts, `blood:mark-expired` command
 - [x] Blockchain audit log (`BloodBank.sol` + `BlockchainService`)
 - [x] Demo seeder — Korle Bu + Ridge with sample inventory
 
 ### Optional / not implemented
 
-- [ ] Email notifications (approval, rejection, requests)
-- [ ] Donor self-service portal
-- [ ] Blood expiry alerts
+- [ ] Production email delivery (dev uses `MAIL_MAILER=log`)
+- [ ] Public testnet/mainnet deployment (local Hardhat only)
 
 ---
 
@@ -358,9 +399,29 @@ Requires blockchain terminals + `php artisan serve` running.
 
 | File | Contents |
 |------|----------|
-| `tarrlok/config/tarrlok.php` | Blood groups, Ghana regions, institution types, screening tests |
-| `tarrlok/config/blockchain.php` | RPC URL, private key, anchor script path |
+| `tarrlok/config/tarrlok.php` | Blood groups, Ghana regions, shelf life (35d), expiry warning (7d) |
+| `tarrlok/config/blockchain.php` | RPC URL, private key, anchor + status scripts |
 | `tarrlok/public/assets/css/` | `login.css`, `register.css`, `admin.css`, `hospital.css` |
+
+---
+
+## Useful commands
+
+```bash
+cd tarrlok
+php artisan migrate:fresh --seed    # Reset DB + demo data
+php artisan blood:mark-expired      # Discard expired units
+php artisan schedule:run            # Run scheduled tasks (expiry)
+php artisan config:clear            # After .env changes
+php artisan test
+```
+
+```bash
+cd blockchain
+npm run node                        # Start chain (keep running)
+npm run deploy                      # Deploy contract (after each node restart)
+node scripts/chain-status.js        # Quick chain health check (CLI)
+```
 
 ---
 
@@ -372,21 +433,19 @@ Requires blockchain terminals + `php artisan serve` running.
 | No partner hospitals | Register a second hospital and approve as admin, or `migrate:fresh --seed` |
 | Issue fails — not enough stock | Lab must register + clear units first; Ridge seeder has 5 units |
 | No blockchain tx hashes | Start `npm run node`, run `npm run deploy`, set `BLOCKCHAIN_ENABLED=true` |
+| Admin blockchain shows offline | Hardhat node not running on the server; chain is local-only |
+| `/track` not found | Run from `tarrlok/` web root; `php artisan route:list --name=track` |
 | 404 on port 8000 | Kill duplicate `php artisan serve` processes |
-| Apache issues | Use `php artisan serve` or see `apache/README.md` if configured |
+| Apache issues | See `apache/README.md` or use `php artisan serve` |
+| HTTPS redirect issues behind Cloudflare | Set `APP_URL=https://...`; app trusts proxies automatically |
 
 ---
 
-## Development
-
-```bash
-cd tarrlok
-php artisan test          # Run tests
-php artisan config:clear  # After .env changes
-```
+## Development notes
 
 - Tarrlok UI uses **Blade + plain CSS** — not Tailwind on portal pages.
 - Blockchain uses the **first Hardhat dev account** private key — local demo only, never production.
+- Restarting Hardhat **wipes chain state** — run `npm run deploy` again; old tx hashes in MySQL may reference a previous chain (acceptable for demo).
 
 ---
 

@@ -18,6 +18,8 @@ class DashboardController extends Controller
             'labStaffCount' => $hospital->labStaff()->count(),
             'unitsOnHand' => $hospital->availableUnitsCount(),
             'pendingRequests' => $hospital->incomingBloodRequests()->whereIn('status', ['pending', 'approved'])->count(),
+            'expiringSoon' => $hospital->bloodUnits()->where('status', 'available')->expiringSoon()->count(),
+            'expiredCount' => $hospital->bloodUnits()->where('status', 'available')->expired()->count(),
         ]);
     }
 }

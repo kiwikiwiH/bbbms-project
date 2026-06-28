@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BloodUnitTraceController;
+use App\Http\Controllers\Admin\BlockchainController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\RegistrationReviewController;
 use App\Http\Controllers\Hospital\BloodInventoryController;
@@ -12,6 +13,8 @@ use App\Http\Controllers\Hospital\PlaceholderController as HospitalPlaceholderCo
 use App\Http\Controllers\Lab\BloodScreeningController;
 use App\Http\Controllers\Lab\BloodUnitController as LabBloodUnitController;
 use App\Http\Controllers\Lab\DashboardController as LabDashboardController;
+use App\Http\Controllers\Lab\DonorLookupController;
+use App\Http\Controllers\DonationTrackController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,6 +50,10 @@ Route::get('/dashboard', function () {
     return redirect()->route('hospital.dashboard');
 })->middleware(['auth'])->name('dashboard');
 
+Route::get('/track', [DonationTrackController::class, 'index'])->name('track.index');
+Route::post('/track', [DonationTrackController::class, 'lookup'])->name('track.lookup');
+Route::get('/track/{bloodUnit}', [DonationTrackController::class, 'show'])->name('track.show');
+
 Route::middleware(['auth', 'hospital'])->prefix('hospital')->name('hospital.')->group(function () {
     Route::get('/', HospitalDashboardController::class)->name('dashboard');
     Route::get('/inventory', [BloodInventoryController::class, 'index'])->name('inventory');
@@ -77,10 +84,12 @@ Route::middleware(['auth', 'lab'])->prefix('lab')->name('lab.')->group(function 
     Route::post('/units/{bloodUnit}/screening', [BloodScreeningController::class, 'update'])->name('units.screening.update');
     Route::get('/trace', [BloodUnitTraceController::class, 'index'])->name('trace');
     Route::get('/trace/{bloodUnit}', [BloodUnitTraceController::class, 'show'])->name('trace.show');
+    Route::get('/donors/lookup', DonorLookupController::class)->name('donors.lookup');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', AdminDashboardController::class)->name('dashboard');
+    Route::get('/blockchain', BlockchainController::class)->name('blockchain');
     Route::get('/registrations', [RegistrationReviewController::class, 'index'])->name('registrations.index');
     Route::get('/registrations/{hospital}', [RegistrationReviewController::class, 'show'])->name('registrations.show');
     Route::post('/registrations/{hospital}/approve', [RegistrationReviewController::class, 'approve'])->name('registrations.approve');

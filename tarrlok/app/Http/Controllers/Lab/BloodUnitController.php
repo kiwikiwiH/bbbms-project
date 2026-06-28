@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Lab;
 
 use App\Http\Controllers\Controller;
 use App\Models\BloodUnit;
+use App\Models\Donor;
 use App\Services\BlockchainService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,21 +18,19 @@ class BloodUnitController extends Controller
         $hospital = $user->hospital;
 
         $units = $hospital->bloodUnits()
-            ->with(['recorder', 'screener'])
+            ->with(['recorder', 'screener', 'donor'])
             ->latest('collected_at')
             ->paginate(20);
-
-        $recordedByYou = $hospital->bloodUnits()
-            ->where('recorded_by', $user->id)
-            ->count();
 
         return view('lab.units.index', [
             'user' => $user,
             'hospital' => $hospital,
             'units' => $units,
-            'recordedByYou' => $recordedByYou,
+            'recordedByYou' => $hospital->bloodUnits()->where('recorded_by', $user->id)->count(),
             'availableCount' => $hospital->availableUnitsCount(),
             'pendingScreening' => $hospital->bloodUnits()->pendingScreening()->count(),
+            'expiringSoon' => $hospital->bloodUnits()->where('status', 'available')->expiringSoon()->count(),
+            'expiredCount' => $hospital->bloodUnits()->where('status', 'available')->expired()->count(),
         ]);
     }
 
@@ -39,6 +38,7 @@ class BloodUnitController extends Controller
     {
         return view('lab.units.create', [
             'bloodGroups' => config('tarrlok.blood_groups'),
+            'shelfLifeDays' => config('tarrlok.blood_shelf_life_days', 35),
         ]);
     }
 
@@ -47,18 +47,53 @@ class BloodUnitController extends Controller
         $validated = $request->validate([
             'blood_group' => ['required', 'string', 'in:'.implode(',', config('tarrlok.blood_groups'))],
             'collected_at' => ['required', 'date', 'before_or_equal:today'],
+            'donor_phone' => ['required', 'string', 'max:30'],
+            'donor_name' => ['required', 'string', 'max:255'],
+            'donor_email' => ['nullable', 'email', 'max:255'],
         ]);
 
         $user = auth()->user();
         $hospital = $user->hospital;
+        $phone = Donor::normalizePhone($validated['donor_phone']);
+        $donor = Donor::query()->where('phone', $phone)->first();
+
+        if (! $donor) {
+            $donor = Donor::create([
+                'donor_code' => Donor::generateDonorCode(),
+                'name' => $validated['donor_name'],
+                'phone' => $phone,
+                'email' => $validated['donor_email'] ?? null,
+                'blood_group' => $validated['blood_group'],
+                'registered_at_hospital_id' => $hospital->id,
+                'tracking_consent' => true,
+            ]);
+        } else {
+            $donor->update([
+                'name' => $validated['donor_name'],
+                'email' => $validated['donor_email'] ?? $donor->email,
+                'blood_group' => $validated['blood_group'],
+            ]);
+        }
+
+        $collectedAt = $validated['collected_at'];
+        $eligibilityNote = ($donor->last_donation_at && ! $donor->isEligibleToDonate())
+            ? ' Note: donor donated recently — next eligible date is '.$donor->nextEligibleDate()?->format('M j, Y').'.'
+            : '';
 
         $unit = $hospital->bloodUnits()->create([
+            'donor_id' => $donor->id,
             'unit_code' => BloodUnit::generateUnitCode($hospital->id),
             'blood_group' => $validated['blood_group'],
             'status' => 'quarantine',
             'screening_status' => 'pending',
             'recorded_by' => $user->id,
-            'collected_at' => $validated['collected_at'],
+            'collected_at' => $collectedAt,
+            'expires_at' => BloodUnit::calculateExpiresAt($collectedAt),
+        ]);
+
+        $donor->update([
+            'last_donation_at' => $collectedAt,
+            'blood_group' => $validated['blood_group'],
         ]);
 
         $txHash = app(BlockchainService::class)->registerUnit(
@@ -73,6 +108,6 @@ class BloodUnitController extends Controller
 
         return redirect()
             ->route('lab.units.screening.show', $unit)
-            ->with('status', 'Unit '.$unit->unit_code.' registered. Complete the lab screening report to release it to inventory.');
+            ->with('status', 'Unit '.$unit->unit_code.' registered for donor '.$donor->donor_code.'. Give the donor this unit ID to track their donation at /track. Complete the lab screening report.'.$eligibilityNote);
     }
 }

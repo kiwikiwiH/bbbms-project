@@ -21,6 +21,16 @@
     </div>
 </div>
 
+<div class="admin-card" style="margin-bottom:24px;">
+    <div class="admin-card-head">
+        <h2 class="admin-card-title">Blockchain audit trail</h2>
+        <a href="{{ route('admin.blockchain') }}" class="admin-btn admin-btn-outline">View chain status</a>
+    </div>
+    <div class="admin-meta" style="border-top:none;">
+        Monitor Hardhat node health, <code>BloodBank.sol</code> deployment, and transaction hashes anchored when labs register units, complete screening, and hospitals issue blood to partners.
+    </div>
+</div>
+
 <div class="admin-card">
     <div class="admin-card-head">
         <h2 class="admin-card-title">Awaiting Approval</h2>

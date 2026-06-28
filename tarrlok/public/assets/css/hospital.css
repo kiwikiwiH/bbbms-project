@@ -1358,6 +1358,86 @@ select.hospital-input {
   font-size: 13px;
 }
 
+.hospital-stat-warning .hospital-stat-value {
+  color: #b3261e;
+}
+
+.hospital-expiry-alert {
+  border-color: #f9dedc;
+  background: #fff8f7;
+}
+
+.hospital-expiry-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.hospital-expiry-badge.warning {
+  background: #fff4e5;
+  color: #8f4f00;
+  border: 1px solid #ffd8a8;
+}
+
+.hospital-expiry-badge.expired {
+  background: #ffdad6;
+  color: #93000a;
+  border: 1px solid #e4beba;
+}
+
+.hospital-expiry-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hospital-expiry-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e6e8ed;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.donor-field-section {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e6e8ed;
+}
+
+.donor-facility-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.donor-contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #a20513;
+  text-decoration: none;
+}
+
+.donor-contact-link:hover {
+  text-decoration: underline;
+}
+
+.donor-contact-link .material-symbols-outlined {
+  font-size: 16px;
+}
+
 @media (max-width: 520px) {
   .blood-group-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
