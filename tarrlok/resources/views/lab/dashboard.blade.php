@@ -61,7 +61,7 @@
                     {{ $expiringSoon }} unit{{ $expiringSoon === 1 ? '' : 's' }} expire within {{ config('tarrlok.expiry_warning_days', 7) }} days.
                 @endif
                 @if ($expiredCount > 0)
-                    {{ $expiredCount }} unit{{ $expiredCount === 1 ? ' is' : 's are' }} past expiry.
+                    {{ $expiredCount }} unit{{ $expiredCount === 1 ? '' : 's' }} discarded after expiry.
                 @endif
                 <a href="{{ route('lab.units.index') }}" style="color:#a20513;">View units</a>
             </p>

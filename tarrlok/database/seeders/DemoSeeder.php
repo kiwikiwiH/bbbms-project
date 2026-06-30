@@ -6,7 +6,9 @@ use App\Models\BloodUnit;
 use App\Models\Donor;
 use App\Models\Hospital;
 use App\Models\User;
+use App\Services\BlockchainService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 
 class DemoSeeder extends Seeder
@@ -43,7 +45,7 @@ class DemoSeeder extends Seeder
             'reviewed_at' => now(),
         ]);
 
-        $korleAdmin = User::create([
+        User::create([
             'hospital_id' => $korleBu->id,
             'name' => 'Dr. Kwame Mensah',
             'job_title' => 'Blood Bank Manager',
@@ -54,7 +56,7 @@ class DemoSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
-        $korleLab = User::create([
+        User::create([
             'hospital_id' => $korleBu->id,
             'name' => 'Ama Osei',
             'job_title' => 'Senior Lab Technologist',
@@ -65,7 +67,7 @@ class DemoSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
-        $ridgeAdmin = User::create([
+        User::create([
             'hospital_id' => $ridge->id,
             'name' => 'Dr. Efua Adjei',
             'job_title' => 'Blood Bank Manager',
@@ -104,7 +106,7 @@ class DemoSeeder extends Seeder
         foreach ($groups as $index => $group) {
             $collectedAt = now()->subDays($collectedOffsets[$index]);
 
-            BloodUnit::create([
+            $unit = BloodUnit::create([
                 'hospital_id' => $ridge->id,
                 'donor_id' => $demoDonor->id,
                 'unit_code' => sprintf('UNIT-%03d-%05d', $ridge->id, $index + 1),
@@ -121,7 +123,11 @@ class DemoSeeder extends Seeder
                 'screening_hep_c' => true,
                 'screening_syphilis' => true,
             ]);
+
+            $this->seedBlockchainHashes($unit, $ridge);
         }
+
+        Artisan::call('blood:mark-expired');
 
         $this->command?->info('Demo data seeded.');
         $this->command?->table(
@@ -133,6 +139,33 @@ class DemoSeeder extends Seeder
                 ['Ridge lab', 'kofi.boateng@ridge.gov.gh', 'RidgeLab2024!'],
             ]
         );
-        $this->command?->info('Donor tracking demo: open /track and enter UNIT-002-00001 (no login).');
+        $this->command?->info('Donor tracking: /track → UNIT-002-00001 (demo blockchain hashes included).');
+    }
+
+    private function seedBlockchainHashes(BloodUnit $unit, Hospital $hospital): void
+    {
+        $blockchain = app(BlockchainService::class);
+
+        if ($blockchain->isEnabled()) {
+            $registerTx = $blockchain->registerUnit($unit->unit_code, $hospital->id, $unit->blood_group);
+            $screenTx = $blockchain->recordScreening($unit->unit_code, 'cleared');
+
+            $unit->update(array_filter([
+                'blockchain_register_tx' => $registerTx,
+                'blockchain_screening_tx' => $screenTx,
+            ]));
+
+            return;
+        }
+
+        $unit->update([
+            'blockchain_register_tx' => $this->demoTxHash($unit->unit_code, 'register'),
+            'blockchain_screening_tx' => $this->demoTxHash($unit->unit_code, 'screen'),
+        ]);
+    }
+
+    private function demoTxHash(string $unitCode, string $event): string
+    {
+        return '0x'.substr(hash('sha256', "tarrlok-demo:{$unitCode}:{$event}"), 0, 64);
     }
 }

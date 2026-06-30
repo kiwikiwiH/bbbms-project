@@ -23,3 +23,6 @@ tarrlok/node_modules/
 tarrlok/public/build/
 tarrlok/storage/*.key
 tarrlok/database/*.sqlite
+
+tarrlok-docker-share/
+tarrlok-docker-share.zip

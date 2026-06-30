@@ -36,6 +36,15 @@
             </div>
         </dl>
 
+        @if (session('slip_unit') === $unit->unit_code || $unit->screening_status === 'pending')
+            <p style="margin:0 0 20px;">
+                <a href="{{ route('lab.units.slip', $unit) }}" class="hospital-btn hospital-btn-outline hospital-btn-sm" target="_blank" rel="noopener">
+                    <span class="material-symbols-outlined">print</span>
+                    Print donation slip for donor
+                </a>
+            </p>
+        @endif
+
         @if ($errors->any())
             <div class="hospital-alert" style="background:#ffdad6;border:1px solid #e4beba;color:#93000a;margin-bottom:20px;">
                 @foreach ($errors->all() as $error)

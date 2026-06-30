@@ -2,8 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\BloodUnit;
-use App\Services\DonorNotificationService;
+use App\Services\ExpiryService;
 use Illuminate\Console\Command;
 
 class MarkExpiredBloodUnits extends Command
@@ -12,19 +11,11 @@ class MarkExpiredBloodUnits extends Command
 
     protected $description = 'Discard available blood units that have passed their expiry date';
 
-    public function handle(DonorNotificationService $notifications): int
+    public function handle(ExpiryService $expiry): int
     {
-        $units = BloodUnit::query()
-            ->where('status', 'available')
-            ->expired()
-            ->get();
+        $count = $expiry->discardExpiredUnits();
 
-        foreach ($units as $unit) {
-            $unit->update(['status' => 'discarded']);
-            $notifications->notifyStatusChange($unit, 'expired');
-        }
-
-        $this->info('Marked '.$units->count().' unit(s) as expired/discarded.');
+        $this->info('Marked '.$count.' unit(s) as expired/discarded.');
 
         return self::SUCCESS;
     }

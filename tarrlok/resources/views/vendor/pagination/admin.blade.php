@@ -1,17 +1,19 @@
 @if ($paginator->hasPages())
-    <nav class="admin-pagination" role="navigation" aria-label="Pagination">
+    <nav class="admin-pagination-nav" role="navigation" aria-label="Pagination">
         @if ($paginator->onFirstPage())
-            <span style="color:#bdc7d9;margin-right:12px;">Previous</span>
+            <span class="admin-pagination-btn disabled">Previous</span>
         @else
-            <a href="{{ $paginator->previousPageUrl() }}" style="margin-right:12px;">Previous</a>
+            <a class="admin-pagination-btn" href="{{ $paginator->previousPageUrl() }}" rel="prev">Previous</a>
         @endif
 
-        <span style="color:#555f6f;">Page {{ $paginator->currentPage() }} of {{ $paginator->lastPage() }}</span>
+        <span class="admin-pagination-info">
+            Page {{ $paginator->currentPage() }} of {{ $paginator->lastPage() }}
+        </span>
 
         @if ($paginator->hasMorePages())
-            <a href="{{ $paginator->nextPageUrl() }}" style="margin-left:12px;">Next</a>
+            <a class="admin-pagination-btn" href="{{ $paginator->nextPageUrl() }}" rel="next">Next</a>
         @else
-            <span style="color:#bdc7d9;margin-left:12px;">Next</span>
+            <span class="admin-pagination-btn disabled">Next</span>
         @endif
     </nav>
 @endif

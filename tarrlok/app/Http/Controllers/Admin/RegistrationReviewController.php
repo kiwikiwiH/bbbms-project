@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Hospital;
+use App\Notifications\HospitalRegistrationApproved;
+use App\Notifications\HospitalRegistrationRejected;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
 class RegistrationReviewController extends Controller
@@ -56,6 +59,12 @@ class RegistrationReviewController extends Controller
             $hospital->users()->update(['status' => 'active']);
         });
 
+        $hospital->load('users');
+        $contact = $hospital->primaryContact();
+        if ($contact) {
+            Notification::send($contact, new HospitalRegistrationApproved($hospital));
+        }
+
         return redirect()
             ->route('admin.registrations.show', $hospital)
             ->with('status', 'Facility approved. The administrator can now sign in.');
@@ -81,6 +90,12 @@ class RegistrationReviewController extends Controller
 
             $hospital->users()->update(['status' => 'pending']);
         });
+
+        $hospital->load('users');
+        $contact = $hospital->primaryContact();
+        if ($contact) {
+            Notification::send($contact, new HospitalRegistrationRejected($hospital));
+        }
 
         return redirect()
             ->route('admin.registrations.show', $hospital)

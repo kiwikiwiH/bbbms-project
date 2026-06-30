@@ -15,8 +15,9 @@ Config files live under `C:\Apache24\conf\extra\`.
 ## Tarrlok
 
 - Folder: `bbbms-project\tarrlok` (also linked as `htdocs\tarrlok`)
-- URL: **http://tarrlok.localhost**
-- `APP_URL=http://tarrlok.localhost` in `.env`
+- Local dev: **http://tarrlok.localhost**
+- Public (Cloudflare): **https://tarrlok.tesnet.xyz** — see [docs/DEPLOY-LOCAL-CLOUDFLARE.md](../docs/DEPLOY-LOCAL-CLOUDFLARE.md)
+- `.env`: `APP_URL=https://tarrlok.tesnet.xyz` when tunneled (or `http://tarrlok.localhost` for local only)
 
 ## After editing Apache config
 

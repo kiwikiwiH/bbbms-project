@@ -189,6 +189,32 @@ class BloodUnit extends Model
         return 'UNIT-'.str_pad((string) $hospitalId, 3, '0', STR_PAD_LEFT).'-'.str_pad((string) $sequence, 5, '0', STR_PAD_LEFT);
     }
 
+    public function stockStatusLabel(): string
+    {
+        if ($this->status === 'discarded') {
+            return 'Discarded';
+        }
+
+        if ($this->status === 'available' && $this->isExpired()) {
+            return 'Expired';
+        }
+
+        return ucfirst($this->status);
+    }
+
+    public function stockStatusClass(): string
+    {
+        if ($this->status === 'discarded' || ($this->status === 'available' && $this->isExpired())) {
+            return 'rejected';
+        }
+
+        return match ($this->status) {
+            'available' => 'fulfilled',
+            'issued' => 'approved',
+            default => 'pending',
+        };
+    }
+
     public function getRouteKeyName(): string
     {
         return 'unit_code';

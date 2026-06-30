@@ -61,6 +61,44 @@ class LabStaffController extends Controller
         return back()->with('status', $message);
     }
 
+    public function edit(User $user): View
+    {
+        $this->ensureLabStaff($user);
+
+        return view('hospital.lab-staff.edit', [
+            'staff' => $user,
+            'hospital' => auth()->user()->hospital,
+        ]);
+    }
+
+    public function update(Request $request, User $user): RedirectResponse
+    {
+        $this->ensureLabStaff($user);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'job_title' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user->fill([
+            'name' => $validated['name'],
+            'job_title' => $validated['job_title'],
+            'email' => $validated['email'],
+        ]);
+
+        if (! empty($validated['password'])) {
+            $user->password = $validated['password'];
+        }
+
+        $user->save();
+
+        return redirect()
+            ->route('hospital.lab-staff.index')
+            ->with('status', 'Lab staff account updated.');
+    }
+
     private function ensureLabStaff(User $user): void
     {
         abort_unless(

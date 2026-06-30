@@ -64,6 +64,15 @@ class Hospital extends Model
         return $this->hasMany(BloodRequest::class, 'requesting_hospital_id');
     }
 
+    public function partnerUnitsIssuedCount(): int
+    {
+        return (int) \Illuminate\Support\Facades\DB::table('blood_request_unit')
+            ->join('blood_requests', 'blood_requests.id', '=', 'blood_request_unit.blood_request_id')
+            ->where('blood_requests.fulfilling_hospital_id', $this->id)
+            ->where('blood_requests.status', 'fulfilled')
+            ->count();
+    }
+
     public function availableUnitsCount(?string $bloodGroup = null): int
     {
         $query = $this->bloodUnits()->available();

@@ -14,4 +14,8 @@
         <span class="material-symbols-outlined">link</span>
         Blockchain
     </a>
+    <a href="{{ route('admin.trace') }}" @class(['active' => str_starts_with($route ?? '', 'admin.trace')])>
+        <span class="material-symbols-outlined">search</span>
+        Trace Unit
+    </a>
 </nav>

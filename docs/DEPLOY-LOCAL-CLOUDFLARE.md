@@ -2,6 +2,8 @@
 
 Expose your **local** Tarrlok install to the internet via [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) (`cloudflared`). No port-forwarding on your router.
 
+**Already have `tesnet.xyz` on Cloudflare?** Use **`tarrlok.tesnet.xyz`** — see [Tesnet.xyz quick setup](#tesnetxyz-quick-setup-paytesnetxyz--tarrloktesnetxyz) below.
+
 ---
 
 ## What you need
@@ -14,6 +16,103 @@ Expose your **local** Tarrlok install to the internet via [Cloudflare Tunnel](ht
 | **Project** | Clone or copy `bbbms-project` to the server |
 
 Blockchain (optional): Hardhat node + deploy on the **same server** if you want on-chain hashes through the tunnel. The tunnel only exposes the Laravel app, not port 8545.
+
+---
+
+## Tesnet.xyz quick setup (`pay.tesnet.xyz` + `tarrlok.tesnet.xyz`)
+
+You already run **`tesnet.xyz`** on this server (e.g. `pay.tesnet.xyz` for hotspot-pay). Add Tarrlok as a **second hostname** on the same tunnel.
+
+| Public URL | Serves |
+|------------|--------|
+| `https://pay.tesnet.xyz` | hotspot-pay (unchanged) |
+| `https://tarrlok.tesnet.xyz` | Tarrlok Laravel app |
+
+### Step 1 — Laravel on the server
+
+Project is already at `C:\Apache24\htdocs\bbbms-project\tarrlok`. In `.env`:
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://tarrlok.tesnet.xyz
+
+SESSION_SECURE_COOKIE=true
+```
+
+```powershell
+cd C:\Apache24\htdocs\bbbms-project\tarrlok
+composer install --no-dev
+php artisan migrate --force
+php artisan db:seed --force
+php artisan config:cache
+```
+
+### Step 2 — Run the web app locally
+
+**Easiest (recommended first):**
+
+```powershell
+cd C:\Apache24\htdocs\bbbms-project\tarrlok
+php artisan serve --host=127.0.0.1 --port=8080
+```
+
+Keep this window open. Tunnel will point to `http://127.0.0.1:8080`.
+
+**Or Apache:** add vhost for `tarrlok.tesnet.xyz` (section 5) and tunnel to `http://127.0.0.1:80`.
+
+### Step 3 — DNS for the new subdomain
+
+If you use an **existing** named tunnel:
+
+```powershell
+cloudflared tunnel route dns YOUR_TUNNEL_NAME tarrlok.tesnet.xyz
+```
+
+Or in **Cloudflare Dashboard** → DNS → Add record:
+
+- Type: `CNAME`
+- Name: `tarrlok`
+- Target: `<your-tunnel-id>.cfargotunnel.com` (same pattern as `pay`)
+
+### Step 4 — Update cloudflared config
+
+Edit `C:\Users\<you>\.cloudflared\config.yml` — add Tarrlok **above** the catch-all `404` rule.
+
+Example with both apps: **[deploy/cloudflared-tesnet.xyz.example.yml](../deploy/cloudflared-tesnet.xyz.example.yml)**
+
+```yaml
+ingress:
+  - hostname: pay.tesnet.xyz
+    service: http://127.0.0.1:80
+  - hostname: tarrlok.tesnet.xyz
+    service: http://127.0.0.1:8080
+  - service: http_status:404
+```
+
+Restart the tunnel:
+
+```powershell
+cloudflared tunnel run YOUR_TUNNEL_NAME
+```
+
+### Step 5 — Test
+
+1. `https://tarrlok.tesnet.xyz/up` → Laravel health OK  
+2. `https://tarrlok.tesnet.xyz/login` → Tarrlok login  
+3. `https://tarrlok.tesnet.xyz/track` → public donor tracking  
+
+### Blockchain (same server, not public)
+
+```powershell
+cd C:\Apache24\htdocs\bbbms-project\blockchain
+npm run node
+# new terminal:
+npm run deploy
+```
+
+Set `BLOCKCHAIN_ENABLED=true` in `tarrlok/.env`, then `php artisan config:clear`.  
+Admin: `https://tarrlok.tesnet.xyz/admin/blockchain`
 
 ---
 
@@ -209,6 +308,8 @@ Windows Task Scheduler — run every minute:
 ```text
 php C:\Apache24\htdocs\bbbms-project\tarrlok\artisan schedule:run
 ```
+
+Notifications use `QUEUE_CONNECTION=sync` by default (no separate queue worker required).
 
 ---
 

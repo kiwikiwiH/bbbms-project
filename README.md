@@ -24,7 +24,7 @@ MySQL is the **operational database**. The blockchain is an **audit trail** — 
 |--------|------------|
 | Backend | **Laravel 13** (PHP 8.3+) |
 | Frontend | **Blade** templates + plain CSS |
-| Auth | Laravel Breeze (Blade) |
+| Auth | Session login (admin / hospital / lab) |
 | Database | **MySQL** (recommended) or **SQLite** |
 | Blockchain | **Hardhat** + `BloodBank.sol` + Laravel `BlockchainService` |
 | Local chain | Hardhat node (`http://127.0.0.1:8545`) |
@@ -76,7 +76,10 @@ bbbms-project/
 │   └── README.md
 ├── deploy/
 │   └── cloudflared-config.example.yml
+├── docker/                        # Dockerfiles + compose env template
+├── docker-compose.yml             # Laravel + MySQL + Hardhat stack
 ├── docs/
+│   ├── DOCKER.md                  # Run and share via Docker
 │   └── DEPLOY-LOCAL-CLOUDFLARE.md # Local server + Cloudflare Tunnel
 ├── apache/
 │   └── README.md                  # Apache vhost (tarrlok.localhost)
@@ -107,6 +110,14 @@ bbbms-project/
 - **Composer**
 - **Node.js 18+** — required for blockchain
 - **MySQL 8** (recommended) or SQLite for local dev
+
+**Or use Docker** (no local PHP/MySQL/Node): see **[docs/DOCKER.md](docs/DOCKER.md)**
+
+```bash
+cp docker/.env.example .env
+docker compose up --build
+# → http://localhost:8080
+```
 
 ---
 
@@ -345,16 +356,11 @@ Requires blockchain terminals + web server running.
 
 ## Deploy on a local server + Cloudflare Tunnel
 
-Expose the app publicly without router port-forwarding:
+Expose via **`https://tarrlok.tesnet.xyz`** (or your subdomain) on an existing **tesnet.xyz** server:
 
-1. Run Laravel on the server (Apache or `php artisan serve`)
-2. Run Hardhat node + deploy on the **same server** (blockchain stays on `127.0.0.1:8545` — not tunneled)
-3. Point **cloudflared** at your local web port
-4. Set `APP_URL=https://your-subdomain.yourdomain.com`
+**[docs/DEPLOY-LOCAL-CLOUDFLARE.md](docs/DEPLOY-LOCAL-CLOUDFLARE.md)** — includes tesnet.xyz steps alongside `pay.tesnet.xyz`
 
-Full guide: **[docs/DEPLOY-LOCAL-CLOUDFLARE.md](docs/DEPLOY-LOCAL-CLOUDFLARE.md)**
-
-Example config: **[deploy/cloudflared-config.example.yml](deploy/cloudflared-config.example.yml)**
+Example tunnel config: **[deploy/cloudflared-tesnet.xyz.example.yml](deploy/cloudflared-tesnet.xyz.example.yml)**
 
 ---
 
@@ -390,7 +396,7 @@ Example config: **[deploy/cloudflared-config.example.yml](deploy/cloudflared-con
 
 ### Optional / not implemented
 
-- [ ] Production email delivery (dev uses `MAIL_MAILER=log`)
+- [ ] Production email delivery (set `MAIL_MAILER=smtp` and run with `QUEUE_CONNECTION=sync`)
 - [ ] Public testnet/mainnet deployment (local Hardhat only)
 
 ---

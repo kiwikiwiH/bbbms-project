@@ -22,7 +22,9 @@ return new class extends Migration
             $table->text('screening_notes')->nullable()->after('screening_syphilis');
         });
 
-        DB::statement("ALTER TABLE blood_units MODIFY COLUMN status ENUM('quarantine','available','reserved','issued','discarded') NOT NULL DEFAULT 'quarantine'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE blood_units MODIFY COLUMN status ENUM('quarantine','available','reserved','issued','discarded') NOT NULL DEFAULT 'quarantine'");
+        }
 
         DB::table('blood_units')->where('status', 'available')->update([
             'screening_status' => 'cleared',
@@ -62,6 +64,8 @@ return new class extends Migration
             ]);
         });
 
-        DB::statement("ALTER TABLE blood_units MODIFY COLUMN status ENUM('available','reserved','issued') NOT NULL DEFAULT 'available'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE blood_units MODIFY COLUMN status ENUM('available','reserved','issued') NOT NULL DEFAULT 'available'");
+        }
     }
 };

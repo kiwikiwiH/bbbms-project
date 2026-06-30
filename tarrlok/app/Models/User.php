@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -52,16 +51,6 @@ class User extends Authenticatable
     public function isLab(): bool
     {
         return $this->role === 'lab';
-    }
-
-    public function isDonor(): bool
-    {
-        return $this->role === 'donor';
-    }
-
-    public function donor(): HasOne
-    {
-        return $this->hasOne(Donor::class);
     }
 
     public function isActive(): bool

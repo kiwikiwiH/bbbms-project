@@ -73,6 +73,8 @@ Route::middleware(['auth', 'hospital'])->prefix('hospital')->name('hospital.')->
     Route::post('/lab-staff/{user}/toggle-status', [LabStaffController::class, 'toggleStatus'])
         ->name('lab-staff.toggle')
         ->whereNumber('user');
+    Route::get('/lab-staff/{user}/edit', [LabStaffController::class, 'edit'])->name('lab-staff.edit')->whereNumber('user');
+    Route::patch('/lab-staff/{user}', [LabStaffController::class, 'update'])->name('lab-staff.update')->whereNumber('user');
 });
 
 Route::middleware(['auth', 'lab'])->prefix('lab')->name('lab.')->group(function () {
@@ -80,6 +82,7 @@ Route::middleware(['auth', 'lab'])->prefix('lab')->name('lab.')->group(function 
     Route::get('/units', [LabBloodUnitController::class, 'index'])->name('units.index');
     Route::get('/units/create', [LabBloodUnitController::class, 'create'])->name('units.create');
     Route::post('/units', [LabBloodUnitController::class, 'store'])->name('units.store');
+    Route::get('/units/{bloodUnit}/slip', [LabBloodUnitController::class, 'slip'])->name('units.slip');
     Route::get('/units/{bloodUnit}/screening', [BloodScreeningController::class, 'show'])->name('units.screening.show');
     Route::post('/units/{bloodUnit}/screening', [BloodScreeningController::class, 'update'])->name('units.screening.update');
     Route::get('/trace', [BloodUnitTraceController::class, 'index'])->name('trace');
@@ -90,6 +93,8 @@ Route::middleware(['auth', 'lab'])->prefix('lab')->name('lab.')->group(function 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', AdminDashboardController::class)->name('dashboard');
     Route::get('/blockchain', BlockchainController::class)->name('blockchain');
+    Route::get('/trace', [BloodUnitTraceController::class, 'index'])->name('trace');
+    Route::get('/trace/{bloodUnit}', [BloodUnitTraceController::class, 'show'])->name('trace.show');
     Route::get('/registrations', [RegistrationReviewController::class, 'index'])->name('registrations.index');
     Route::get('/registrations/{hospital}', [RegistrationReviewController::class, 'show'])->name('registrations.show');
     Route::post('/registrations/{hospital}/approve', [RegistrationReviewController::class, 'approve'])->name('registrations.approve');

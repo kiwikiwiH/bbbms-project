@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Hospital;
 
 use App\Http\Controllers\Controller;
+use App\Services\ExpiryService;
 use Illuminate\View\View;
 
 class BloodInventoryController extends Controller
 {
-    public function index(): View
+    public function index(ExpiryService $expiry): View
     {
+        $expiry->discardExpiredUnits();
+
         $hospital = auth()->user()->hospital;
 
         $units = $hospital->bloodUnits()

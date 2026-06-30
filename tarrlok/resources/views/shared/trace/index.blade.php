@@ -1,5 +1,9 @@
 @extends($portal['layout'])
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('assets/css/hospital.css') }}">
+@endpush
+
 @section('title', 'Trace Unit - Tarrlok')
 
 @section('page_title', 'Trace blood unit')
@@ -164,19 +168,19 @@
                         @if ($unit->blockchain_register_tx)
                             <div class="hospital-detail-item">
                                 <dt>Registration tx</dt>
-                                <dd><code class="trace-tx-hash">{{ $unit->blockchain_register_tx }}</code></dd>
+                                <dd>@include('shared.partials.blockchain-tx', ['hash' => $unit->blockchain_register_tx])</dd>
                             </div>
                         @endif
                         @if ($unit->blockchain_screening_tx)
                             <div class="hospital-detail-item">
                                 <dt>Screening tx</dt>
-                                <dd><code class="trace-tx-hash">{{ $unit->blockchain_screening_tx }}</code></dd>
+                                <dd>@include('shared.partials.blockchain-tx', ['hash' => $unit->blockchain_screening_tx])</dd>
                             </div>
                         @endif
                         @if ($unit->blockchain_issue_tx)
                             <div class="hospital-detail-item">
                                 <dt>Partner issue tx</dt>
-                                <dd><code class="trace-tx-hash">{{ $unit->blockchain_issue_tx }}</code></dd>
+                                <dd>@include('shared.partials.blockchain-tx', ['hash' => $unit->blockchain_issue_tx])</dd>
                             </div>
                         @endif
                     </dl>

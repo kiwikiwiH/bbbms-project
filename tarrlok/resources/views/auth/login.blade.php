@@ -43,7 +43,7 @@
                             name="email"
                             type="email"
                             value="{{ old('email') }}"
-                            placeholder="Enter clinical ID or email"
+                            placeholder="Enter your email"
                             required
                             autofocus
                             autocomplete="username"

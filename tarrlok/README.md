@@ -2,7 +2,8 @@
 
 Main Laravel application for **Tarrlok** — the blockchain-based blood bank management system.
 
-Full documentation: **[project README](../README.md)**
+Full documentation: **[project README](../README.md)**  
+Docker (all-in-one): **[docs/DOCKER.md](../docs/DOCKER.md)**
 
 ## Quick start
 

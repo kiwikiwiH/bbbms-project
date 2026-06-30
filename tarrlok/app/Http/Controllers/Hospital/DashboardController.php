@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Hospital;
 
 use App\Http\Controllers\Controller;
+use App\Services\ExpiryService;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(ExpiryService $expiry): View
     {
+        $expiry->discardExpiredUnits();
+
         $user = auth()->user()->load('hospital');
         $hospital = $user->hospital;
 
@@ -19,7 +22,11 @@ class DashboardController extends Controller
             'unitsOnHand' => $hospital->availableUnitsCount(),
             'pendingRequests' => $hospital->incomingBloodRequests()->whereIn('status', ['pending', 'approved'])->count(),
             'expiringSoon' => $hospital->bloodUnits()->where('status', 'available')->expiringSoon()->count(),
-            'expiredCount' => $hospital->bloodUnits()->where('status', 'available')->expired()->count(),
+            'expiredCount' => $hospital->bloodUnits()
+                ->where('status', 'discarded')
+                ->whereNotNull('expires_at')
+                ->where('expires_at', '<=', now())
+                ->count(),
         ]);
     }
 }

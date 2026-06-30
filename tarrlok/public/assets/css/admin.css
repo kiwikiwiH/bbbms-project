@@ -503,3 +503,45 @@
 .admin-blockchain-flow code {
   font-size: 12px;
 }
+
+.admin-pagination-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.admin-pagination-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid #e0e2e7;
+  background: #fff;
+  color: #555f6f;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.admin-pagination-btn:hover:not(.disabled) {
+  border-color: #a20513;
+  color: #a20513;
+}
+
+.admin-pagination-btn.disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.admin-pagination-info {
+  font-size: 13px;
+  color: #555f6f;
+}
+
+.trace-tx-link {
+  text-decoration: none;
+}
+
+.trace-tx-link:hover .trace-tx-hash {
+  color: #a20513;
+}

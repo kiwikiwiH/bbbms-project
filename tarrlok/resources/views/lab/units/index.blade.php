@@ -8,6 +8,22 @@
 @endsection
 
 @section('content')
+@if ($expiringSoon > 0 || $expiredCount > 0)
+    <div class="hospital-card hospital-expiry-alert" style="margin-bottom:16px;">
+        <div class="hospital-card-body">
+            <p class="hospital-flow-note" style="margin:0;">
+                <span class="material-symbols-outlined">event_busy</span>
+                @if ($expiringSoon > 0)
+                    {{ $expiringSoon }} unit(s) expire within {{ config('tarrlok.expiry_warning_days', 7) }} days.
+                @endif
+                @if ($expiredCount > 0)
+                    {{ $expiredCount }} unit(s) discarded after expiry.
+                @endif
+            </p>
+        </div>
+    </div>
+@endif
+
 <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
     <p class="hospital-field-hint" style="margin:0;">You have registered <strong>{{ $recordedByYou }}</strong> unit(s). Only <strong>cleared</strong> units can be issued to partner hospitals.</p>
     <a href="{{ route('lab.units.create') }}" class="hospital-btn hospital-btn-primary hospital-btn-sm">
@@ -35,6 +51,7 @@
                         <th>Screening</th>
                         <th>Stock status</th>
                         <th>Collected</th>
+                        <th>Expires</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -49,15 +66,24 @@
                                 </span>
                             </td>
                             <td>
-                                <span @class(['hospital-req-status', match ($unit->status) {
-                                    'available' => 'fulfilled',
-                                    'issued' => 'approved',
-                                    'discarded' => 'rejected',
-                                    default => 'pending',
-                                }])>{{ ucfirst($unit->status) }}</span>
+                                <span @class(['hospital-req-status', $unit->stockStatusClass()])>{{ $unit->stockStatusLabel() }}</span>
                             </td>
                             <td>{{ $unit->collected_at->format('M j, Y') }}</td>
                             <td>
+                                @if ($unit->expires_at)
+                                    @if ($unit->isExpired())
+                                        <span class="hospital-expiry-badge expired">Expired</span>
+                                    @elseif ($unit->isExpiringSoon())
+                                        <span class="hospital-expiry-badge warning">{{ $unit->expires_at->format('M j, Y') }}</span>
+                                    @else
+                                        {{ $unit->expires_at->format('M j, Y') }}
+                                    @endif
+                                @else
+                                    —
+                                @endif
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:6px;flex-wrap:wrap;">
                                 @if ($unit->screening_status === 'pending')
                                     <a href="{{ route('lab.units.screening.show', $unit) }}" class="hospital-btn hospital-btn-primary hospital-btn-sm">
                                         Complete screening
@@ -67,6 +93,8 @@
                                         View report
                                     </a>
                                 @endif
+                                <a href="{{ route('lab.units.slip', $unit) }}" class="hospital-btn hospital-btn-outline hospital-btn-sm" target="_blank" rel="noopener">Slip</a>
+                                </div>
                             </td>
                         </tr>
                     @endforeach

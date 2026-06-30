@@ -88,12 +88,7 @@
                                 </span>
                             </td>
                             <td>
-                                <span @class(['hospital-req-status', match ($unit->status) {
-                                    'available' => 'fulfilled',
-                                    'issued' => 'approved',
-                                    'discarded' => 'rejected',
-                                    default => 'pending',
-                                }])>{{ ucfirst($unit->status) }}</span>
+                                <span @class(['hospital-req-status', $unit->stockStatusClass()])>{{ $unit->stockStatusLabel() }}</span>
                             </td>
                             <td>{{ $unit->collected_at->format('M j, Y') }}</td>
                             <td>

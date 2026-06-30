@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Hospital;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -19,7 +20,24 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
-        $user = User::factory()->create();
+        $hospital = Hospital::create([
+            'name' => 'Test Hospital',
+            'type' => 'regional',
+            'region' => 'greater_accra',
+            'city' => 'Accra',
+            'license_id' => 'HFRA-TEST-001',
+            'phone' => '+233244000001',
+            'email' => 'test@hospital.gh',
+            'status' => 'approved',
+            'reviewed_at' => now(),
+        ]);
+
+        $user = User::factory()->create([
+            'hospital_id' => $hospital->id,
+            'role' => 'hospital',
+            'status' => 'active',
+            'job_title' => 'Manager',
+        ]);
 
         $response = $this->post('/login', [
             'email' => $user->email,
@@ -27,7 +45,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('hospital.dashboard', absolute: false));
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void

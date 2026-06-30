@@ -16,7 +16,7 @@ if (!privateKey) {
 }
 
 if (!fs.existsSync(deploymentPath)) {
-  console.log(JSON.stringify({ ok: false, error: "Contract not deployed. Run: npm run deploy:local" }));
+  console.log(JSON.stringify({ ok: false, error: "Contract not deployed. Run: cd blockchain && npm run deploy" }));
   process.exit(0);
 }
 

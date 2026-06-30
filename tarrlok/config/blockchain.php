@@ -13,4 +13,7 @@ return [
     'anchor_script' => 'blockchain/scripts/anchor-event.js',
 
     'status_script' => 'blockchain/scripts/chain-status.js',
+
+    // Optional: https://etherscan.io/tx/{hash} — leave null for local Hardhat
+    'explorer_tx_url' => env('BLOCKCHAIN_EXPLORER_TX_URL'),
 ];

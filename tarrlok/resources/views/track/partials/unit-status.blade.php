@@ -94,19 +94,19 @@
                     @if ($unit->blockchain_register_tx)
                         <div class="hospital-detail-item">
                             <dt>Registration</dt>
-                            <dd><code class="trace-tx-hash">{{ $unit->blockchain_register_tx }}</code></dd>
+                            <dd>@include('shared.partials.blockchain-tx', ['hash' => $unit->blockchain_register_tx])</dd>
                         </div>
                     @endif
                     @if ($unit->blockchain_screening_tx)
                         <div class="hospital-detail-item">
                             <dt>Screening</dt>
-                            <dd><code class="trace-tx-hash">{{ $unit->blockchain_screening_tx }}</code></dd>
+                            <dd>@include('shared.partials.blockchain-tx', ['hash' => $unit->blockchain_screening_tx])</dd>
                         </div>
                     @endif
                     @if ($unit->blockchain_issue_tx)
                         <div class="hospital-detail-item">
                             <dt>Partner transfer</dt>
-                            <dd><code class="trace-tx-hash">{{ $unit->blockchain_issue_tx }}</code></dd>
+                            <dd>@include('shared.partials.blockchain-tx', ['hash' => $unit->blockchain_issue_tx])</dd>
                         </div>
                     @endif
                 </dl>

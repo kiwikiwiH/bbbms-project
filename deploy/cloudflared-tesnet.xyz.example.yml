@@ -1,0 +1,30 @@
+# Tesnet.xyz — add Tarrlok to your existing Cloudflare Tunnel
+#
+# If you already tunnel pay.tesnet.xyz, ADD the tarrlok hostname to the same
+# config file (one tunnel, multiple subdomains). Do not run two tunnels on
+# the same ingress rules unless you know you need separate tunnels.
+#
+# 1. Copy relevant lines into:  C:\Users\<YOU>\.cloudflared\config.yml
+# 2. Replace TUNNEL_ID and credentials-file with your real tunnel
+# 3. cloudflared tunnel route dns <tunnel-name> tarrlok.tesnet.xyz
+# 4. cloudflared tunnel run <tunnel-name>
+
+tunnel: TUNNEL_ID
+credentials-file: C:\Users\YOUR_USER\.cloudflared\TUNNEL_ID.json
+
+ingress:
+  # Existing hotspot-pay (keep your current port if different)
+  - hostname: pay.tesnet.xyz
+    service: http://127.0.0.1:80
+
+  # NEW — Tarrlok Laravel app
+  # Option A: artisan serve
+  - hostname: tarrlok.tesnet.xyz
+    service: http://127.0.0.1:8080
+
+  # Option B: Apache vhost for tarrlok.tesnet.xyz on port 80 — use this
+  # instead of 8080 if you add the Apache vhost in docs/DEPLOY-LOCAL-CLOUDFLARE.md
+  # - hostname: tarrlok.tesnet.xyz
+  #   service: http://127.0.0.1:80
+
+  - service: http_status:404

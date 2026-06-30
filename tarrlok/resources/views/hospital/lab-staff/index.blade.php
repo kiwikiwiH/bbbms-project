@@ -50,12 +50,13 @@
                             </td>
                             <td>{{ $staff->created_at->format('M j, Y') }}</td>
                             <td>
-                                <form method="POST" action="{{ route('hospital.lab-staff.toggle', $staff) }}">
+                                <form method="POST" action="{{ route('hospital.lab-staff.toggle', $staff) }}" style="display:inline;">
                                     @csrf
                                     <button type="submit" class="hospital-btn hospital-btn-outline hospital-btn-sm">
                                         {{ $staff->status === 'active' ? 'Suspend' : 'Reactivate' }}
                                     </button>
                                 </form>
+                                <a href="{{ route('hospital.lab-staff.edit', $staff) }}" class="hospital-btn hospital-btn-outline hospital-btn-sm">Edit</a>
                             </td>
                         </tr>
                     @endforeach

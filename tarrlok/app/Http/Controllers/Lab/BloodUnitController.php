@@ -6,14 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\BloodUnit;
 use App\Models\Donor;
 use App\Services\BlockchainService;
+use App\Services\ExpiryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class BloodUnitController extends Controller
 {
-    public function index(): View
+    public function index(ExpiryService $expiry): View
     {
+        $expiry->discardExpiredUnits();
+
         $user = auth()->user();
         $hospital = $user->hospital;
 
@@ -30,7 +33,22 @@ class BloodUnitController extends Controller
             'availableCount' => $hospital->availableUnitsCount(),
             'pendingScreening' => $hospital->bloodUnits()->pendingScreening()->count(),
             'expiringSoon' => $hospital->bloodUnits()->where('status', 'available')->expiringSoon()->count(),
-            'expiredCount' => $hospital->bloodUnits()->where('status', 'available')->expired()->count(),
+            'expiredCount' => $hospital->bloodUnits()
+                ->where('status', 'discarded')
+                ->whereNotNull('expires_at')
+                ->where('expires_at', '<=', now())
+                ->count(),
+        ]);
+    }
+
+    public function slip(BloodUnit $bloodUnit): View
+    {
+        abort_unless($bloodUnit->hospital_id === auth()->user()->hospital_id, 403);
+
+        return view('lab.units.slip', [
+            'unit' => $bloodUnit->load('hospital', 'donor'),
+            'hospital' => auth()->user()->hospital,
+            'trackUrl' => route('track.show', $bloodUnit),
         ]);
     }
 
@@ -75,10 +93,15 @@ class BloodUnitController extends Controller
             ]);
         }
 
+        if ($donor->last_donation_at && ! $donor->isEligibleToDonate()) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'donor_phone' => 'This donor is not yet eligible to donate again. Next eligible date: '.$donor->nextEligibleDate()?->format('M j, Y').'.',
+                ]);
+        }
+
         $collectedAt = $validated['collected_at'];
-        $eligibilityNote = ($donor->last_donation_at && ! $donor->isEligibleToDonate())
-            ? ' Note: donor donated recently — next eligible date is '.$donor->nextEligibleDate()?->format('M j, Y').'.'
-            : '';
 
         $unit = $hospital->bloodUnits()->create([
             'donor_id' => $donor->id,
@@ -108,6 +131,7 @@ class BloodUnitController extends Controller
 
         return redirect()
             ->route('lab.units.screening.show', $unit)
-            ->with('status', 'Unit '.$unit->unit_code.' registered for donor '.$donor->donor_code.'. Give the donor this unit ID to track their donation at /track. Complete the lab screening report.'.$eligibilityNote);
+            ->with('status', 'Unit '.$unit->unit_code.' registered for donor '.$donor->donor_code.'. Print the donation slip for the donor. Complete the lab screening report.')
+            ->with('slip_unit', $unit->unit_code);
     }
 }

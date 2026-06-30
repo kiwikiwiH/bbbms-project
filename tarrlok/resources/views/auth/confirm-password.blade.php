@@ -1,27 +1,52 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
+@extends('layouts.tarrlok-guest')
+
+@section('title', 'Confirm Password - Tarrlok')
+
+@section('content')
+<main class="login-shell">
+    <div class="login-brand">
+        <div class="login-brand-icon">
+            <span class="material-symbols-outlined login-brand-glyph filled">lock</span>
+        </div>
+        <h1 class="login-title">Confirm password</h1>
+        <p class="login-subtitle">This is a secure area. Please confirm your password to continue.</p>
     </div>
 
-    <form method="POST" action="{{ route('password.confirm') }}">
-        @csrf
+    <div class="login-card">
+        <div class="login-card-accent"></div>
 
-        <!-- Password -->
-        <div>
-            <x-input-label for="password" :value="__('Password')" />
+        @if ($errors->any())
+            <div class="login-alert">
+                @foreach ($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
+        @endif
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
+        <form class="login-form" method="POST" action="{{ route('password.confirm') }}">
+            @csrf
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+            <div class="login-field">
+                <label class="login-label" for="password">Password</label>
+                <div class="login-input-wrap">
+                    <span class="material-symbols-outlined login-input-icon">lock</span>
+                    <input
+                        class="login-input"
+                        id="password"
+                        name="password"
+                        type="password"
+                        required
+                        autofocus
+                        autocomplete="current-password"
+                    >
+                </div>
+            </div>
 
-        <div class="flex justify-end mt-4">
-            <x-primary-button>
-                {{ __('Confirm') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+            <button class="login-submit" type="submit">
+                <span class="material-symbols-outlined">check</span>
+                Confirm
+            </button>
+        </form>
+    </div>
+</main>
+@endsection

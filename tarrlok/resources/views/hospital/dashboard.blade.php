@@ -53,7 +53,7 @@
                     {{ $expiringSoon }} cleared unit{{ $expiringSoon === 1 ? '' : 's' }} expire within {{ config('tarrlok.expiry_warning_days', 7) }} days.
                 @endif
                 @if ($expiredCount > 0)
-                    {{ $expiredCount }} unit{{ $expiredCount === 1 ? ' is' : 's are' }} past expiry and should be discarded.
+                    {{ $expiredCount }} unit{{ $expiredCount === 1 ? '' : 's' }} discarded after expiry.
                 @endif
                 <a href="{{ route('hospital.inventory') }}" style="color:#a20513;">Review inventory</a>
             </p>

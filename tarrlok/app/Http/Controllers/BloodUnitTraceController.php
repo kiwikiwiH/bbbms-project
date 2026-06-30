@@ -56,6 +56,15 @@ class BloodUnitTraceController extends Controller
     {
         $user = auth()->user();
 
+        if ($user->isAdmin()) {
+            return [
+                'layout' => 'layouts.tarrlok-admin',
+                'dashboardRoute' => 'admin.dashboard',
+                'traceRoute' => 'admin.trace',
+                'traceShowRoute' => 'admin.trace.show',
+            ];
+        }
+
         if ($user->isLab()) {
             return [
                 'layout' => 'layouts.tarrlok-lab',
