@@ -23,7 +23,7 @@ class DonationStatusChanged extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $unit = $this->unit->loadMissing('hospital');
+        $unit = $this->unit->loadMissing(['hospital', 'donor']);
         $label = match ($this->event) {
             'screening_cleared' => 'cleared lab screening and is available for hospital use',
             'screening_failed' => 'did not pass lab screening',
@@ -34,7 +34,7 @@ class DonationStatusChanged extends Notification
 
         return (new MailMessage)
             ->subject('Your blood donation '.$unit->unit_code.' — Tarrlok')
-            ->greeting('Hello '.$notifiable->name.',')
+            ->greeting('Hello '.($unit->donor?->name ?? 'Donor').',')
             ->line('Your donation **'.$unit->unit_code.'** ('.$unit->blood_group.') '.$label.'.')
             ->line('Current facility: '.$unit->hospital->name)
             ->action('View donation', url('/track/'.$unit->unit_code))

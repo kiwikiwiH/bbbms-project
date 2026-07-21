@@ -165,6 +165,14 @@ This creates:
 - Demo hospitals **Korle Bu** and **Ridge** with lab accounts
 - **5 cleared blood units** at Ridge (linked to a demo donor record; one unit expiring soon)
 - Demo donor phone on file — tracking uses **unit ID**, not a login
++----------------+-----------------------------+-----------------+
+| Role           | Email                       | Password        |
++----------------+-----------------------------+-----------------+
+| Korle Bu admin | kwame.mensah@korlebu.gov.gh | KorleBu2024!    |
+| Korle Bu lab   | ama.osei@korlebu.gov.gh     | KorleBuLab2024! |
+| Ridge admin    | efua.adjei@ridge.gov.gh     | Ridge2024!      |
+| Ridge lab      | kofi.boateng@ridge.gov.gh   | RidgeLab2024!   |
++----------------+-----------------------------+-----------------+
 
 For a completely fresh database:
 
