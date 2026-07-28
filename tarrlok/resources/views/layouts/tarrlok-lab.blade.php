@@ -12,6 +12,7 @@
 </head>
 <body class="hospital-page">
     <div class="hospital-app">
+        <div class="hospital-sidebar-backdrop" data-sidebar-backdrop hidden></div>
         @include('lab.partials.sidebar')
 
         <div class="hospital-main">
@@ -26,6 +27,37 @@
             </main>
         </div>
     </div>
+    <script>
+        (function () {
+            const page = document.body;
+            const sidebar = document.getElementById('hospital-sidebar');
+            const backdrop = document.querySelector('[data-sidebar-backdrop]');
+            const toggles = document.querySelectorAll('[data-sidebar-toggle]');
+            if (!sidebar || !backdrop || !toggles.length) return;
+
+            const setOpen = (open) => {
+                page.classList.toggle('sidebar-open', open);
+                backdrop.hidden = !open;
+                toggles.forEach((btn) => {
+                    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    btn.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+                    const icon = btn.querySelector('.material-symbols-outlined');
+                    if (icon) icon.textContent = open ? 'close' : 'menu';
+                });
+            };
+
+            toggles.forEach((btn) => btn.addEventListener('click', () => {
+                setOpen(!page.classList.contains('sidebar-open'));
+            }));
+            backdrop.addEventListener('click', () => setOpen(false));
+            sidebar.querySelectorAll('a').forEach((link) => {
+                link.addEventListener('click', () => setOpen(false));
+            });
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') setOpen(false);
+            });
+        })();
+    </script>
     @stack('scripts')
 </body>
 </html>

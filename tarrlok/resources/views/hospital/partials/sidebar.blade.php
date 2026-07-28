@@ -3,7 +3,7 @@
     $hospital = $user->hospital;
     $route = request()->route()->getName();
 @endphp
-<aside class="hospital-sidebar" aria-label="Hospital navigation">
+<aside id="hospital-sidebar" class="hospital-sidebar" aria-label="Hospital navigation">
     <a href="{{ route('hospital.dashboard') }}" class="hospital-sidebar-brand">
         <span class="material-symbols-outlined hospital-sidebar-brand-icon filled">bloodtype</span>
         <span>

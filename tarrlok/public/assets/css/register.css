@@ -503,6 +503,11 @@
   padding-right: 48px;
 }
 
+.reg-input-password::-ms-reveal,
+.reg-input-password::-ms-clear {
+  display: none;
+}
+
 .reg-toggle-password {
   position: absolute;
   top: 50%;
@@ -511,11 +516,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 28px;
+  height: 28px;
   border: none;
   background: transparent;
   padding: 0;
   cursor: pointer;
   color: #555f6f;
+  z-index: 2;
+}
+
+.reg-toggle-password .material-symbols-outlined {
+  font-size: 22px;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .reg-toggle-password:hover {

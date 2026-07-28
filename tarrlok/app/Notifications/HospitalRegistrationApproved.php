@@ -11,7 +11,10 @@ class HospitalRegistrationApproved extends Notification
 {
     use Queueable;
 
-    public function __construct(public Hospital $hospital) {}
+    public function __construct(
+        public Hospital $hospital,
+        public ?string $adminMessage = null,
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -21,11 +24,12 @@ class HospitalRegistrationApproved extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Tarrlok — '.$this->hospital->name.' approved')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('Your facility **'.$this->hospital->name.'** has been approved on the Tarrlok network.')
-            ->line('You can now sign in with your hospital administrator account.')
-            ->action('Sign in', url('/login'))
-            ->line('Thank you for joining Tarrlok.');
+            ->subject('Tarrlok — '.$this->hospital->name.' registration approved')
+            ->view('emails.hospital-approved', [
+                'hospital' => $this->hospital,
+                'contactName' => $notifiable->name,
+                'adminMessage' => $this->adminMessage,
+                'loginUrl' => url('/login'),
+            ]);
     }
 }

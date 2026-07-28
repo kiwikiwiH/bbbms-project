@@ -70,7 +70,7 @@
                             data-toggle-password
                             aria-label="Toggle password visibility"
                         >
-                            <span class="material-symbols-outlined login-input-icon">visibility_off</span>
+                            <span class="material-symbols-outlined">visibility_off</span>
                         </button>
                     </div>
                 </div>

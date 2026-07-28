@@ -91,34 +91,117 @@
     @endif
 
     @if ($hospital->status === 'pending')
-        <div class="admin-actions">
-            <form method="POST" action="{{ route('admin.registrations.approve', $hospital) }}">
-                @csrf
-                <button type="submit" class="admin-btn admin-btn-approve">
-                    <span class="material-symbols-outlined">check_circle</span>
-                    Approve Facility
-                </button>
-            </form>
+        @php
+            $contactName = $contact?->name ?? 'Hospital Administrator';
+            $defaultApproveMessage = "Your HeFRA licence and facility details have been verified. You may now sign in and begin using the Tarrlok hospital portal for inventory, lab operations, and partner blood exchange.";
+            $defaultRejectReason = "The HeFRA licence ID provided could not be verified against our records.";
+        @endphp
 
-            <div class="admin-reject-form">
-                <form method="POST" action="{{ route('admin.registrations.reject', $hospital) }}">
-                    @csrf
-                    <label for="rejection_reason" style="display:block;font-size:13px;font-weight:600;margin-bottom:8px;color:#5b403d;">Rejection reason (required if rejecting)</label>
-                    <textarea
-                        id="rejection_reason"
-                        name="rejection_reason"
-                        placeholder="Explain why this registration cannot be approved (e.g. invalid HeFRA license, duplicate facility)..."
-                        required
-                    >{{ old('rejection_reason') }}</textarea>
-                    @error('rejection_reason')
-                        <p style="color:#93000a;font-size:13px;margin:8px 0 0;">{{ $message }}</p>
-                    @enderror
-                    <button type="submit" class="admin-btn admin-btn-reject" style="margin-top:12px;">
-                        <span class="material-symbols-outlined">cancel</span>
-                        Reject Registration
-                    </button>
-                </form>
-            </div>
+        <div class="admin-letter-grid">
+            <section class="admin-letter">
+                <div class="admin-letter-head approve">
+                    <span class="material-symbols-outlined">mark_email_read</span>
+                    <div>
+                        <strong>Approval email template</strong>
+                        <p>Fixed letter text is sent automatically. Edit only the highlighted note if needed.</p>
+                    </div>
+                </div>
+                <div class="admin-letter-body">
+                    <p class="admin-letter-fixed">Dear {{ $contactName }},</p>
+                    <p class="admin-letter-fixed">
+                        We write with reference to the registration of
+                        <strong>{{ $hospital->name }}</strong>
+                        (HeFRA Licence: <strong>{{ $hospital->license_id }}</strong>)
+                        on the Tarrlok blood bank network.
+                    </p>
+                    <p class="admin-letter-fixed">
+                        We are pleased to inform you that your facility registration has been <strong>approved</strong>.
+                    </p>
+
+                    <form method="POST" action="{{ route('admin.registrations.approve', $hospital) }}">
+                        @csrf
+                        <label class="admin-letter-label" for="approve_admin_message">Admin note (editable)</label>
+                        <textarea
+                            id="approve_admin_message"
+                            name="admin_message"
+                            class="admin-letter-input"
+                            rows="4"
+                        >{{ old('admin_message', $defaultApproveMessage) }}</textarea>
+                        @error('admin_message')
+                            <p class="admin-letter-error">{{ $message }}</p>
+                        @enderror
+
+                        <p class="admin-letter-fixed">
+                            Your hospital administrator account is now active. A sign-in button will be included in the email.
+                        </p>
+                        <p class="admin-letter-signoff">Yours faithfully,<br><strong>Tarrlok Platform Administration</strong></p>
+
+                        <button type="submit" class="admin-btn admin-btn-approve">
+                            <span class="material-symbols-outlined">check_circle</span>
+                            Approve &amp; send email
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <section class="admin-letter">
+                <div class="admin-letter-head reject">
+                    <span class="material-symbols-outlined">mail</span>
+                    <div>
+                        <strong>Rejection email template</strong>
+                        <p>Fill in the reason. Optionally add extra notes. Everything else stays official and fixed.</p>
+                    </div>
+                </div>
+                <div class="admin-letter-body">
+                    <p class="admin-letter-fixed">Dear {{ $contactName }},</p>
+                    <p class="admin-letter-fixed">
+                        We write with reference to the registration of
+                        <strong>{{ $hospital->name }}</strong>
+                        (HeFRA Licence: <strong>{{ $hospital->license_id }}</strong>).
+                    </p>
+                    <p class="admin-letter-fixed">
+                        After review, we regret to inform you that your facility registration has <strong>not been approved</strong> at this time.
+                    </p>
+
+                    <form method="POST" action="{{ route('admin.registrations.reject', $hospital) }}">
+                        @csrf
+                        <label class="admin-letter-label" for="rejection_reason">Reason for decision (required)</label>
+                        <textarea
+                            id="rejection_reason"
+                            name="rejection_reason"
+                            class="admin-letter-input admin-letter-input-reason"
+                            rows="3"
+                            required
+                            placeholder="e.g. Invalid or unverifiable HeFRA licence, duplicate facility, incomplete details..."
+                        >{{ old('rejection_reason', $defaultRejectReason) }}</textarea>
+                        @error('rejection_reason')
+                            <p class="admin-letter-error">{{ $message }}</p>
+                        @enderror
+
+                        <label class="admin-letter-label" for="reject_admin_message">Additional notes (optional)</label>
+                        <textarea
+                            id="reject_admin_message"
+                            name="admin_message"
+                            class="admin-letter-input"
+                            rows="3"
+                            placeholder="Optional guidance, e.g. documents to re-submit, who to contact..."
+                        >{{ old('admin_message') }}</textarea>
+                        @error('admin_message')
+                            <p class="admin-letter-error">{{ $message }}</p>
+                        @enderror
+
+                        <p class="admin-letter-fixed">
+                            If you believe this decision was made in error, or can supply corrected documentation, contact Tarrlok support for reconsideration.
+                        </p>
+                        <p class="admin-letter-signoff">Yours faithfully,<br><strong>Tarrlok Platform Administration</strong></p>
+
+                        <button type="submit" class="admin-btn admin-btn-reject">
+                            <span class="material-symbols-outlined">cancel</span>
+                            Reject &amp; send email
+                        </button>
+                    </form>
+                </div>
+            </section>
         </div>
     @elseif ($hospital->status === 'approved')
         <div class="admin-actions">

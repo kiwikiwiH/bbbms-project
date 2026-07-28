@@ -1,3 +1,10 @@
+.hospital-page,
+.hospital-page *,
+.hospital-page *::before,
+.hospital-page *::after {
+  box-sizing: border-box;
+}
+
 .hospital-page {
   min-height: 100vh;
   background: #f7f9fe;
@@ -169,6 +176,43 @@
   padding: 18px 28px;
   border-bottom: 1px solid #e0e2e7;
   background: #ffffff;
+}
+
+.hospital-topbar-lead {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.hospital-menu-toggle {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-top: 2px;
+  padding: 0;
+  border: 1px solid #e0e2e7;
+  border-radius: 8px;
+  background: #fff;
+  color: #181c20;
+  cursor: pointer;
+}
+
+.hospital-menu-toggle .material-symbols-outlined {
+  font-size: 22px;
+}
+
+.hospital-menu-toggle:hover {
+  border-color: #a20513;
+  color: #a20513;
+}
+
+.hospital-sidebar-backdrop {
+  display: none;
 }
 
 .hospital-topbar-title {
@@ -369,9 +413,34 @@
   color: #a20513;
 }
 
+.hospital-btn-danger {
+  background: #fff;
+  border: 1px solid #e4beba;
+  color: #c62828;
+}
+
+.hospital-btn-danger:hover {
+  border-color: #c62828;
+  background: #fff5f5;
+  color: #93000e;
+}
+
 .hospital-btn-sm {
   padding: 7px 12px;
   font-size: 13px;
+}
+
+.hospital-table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.hospital-table-actions form {
+  display: inline;
+  margin: 0;
 }
 
 .hospital-table-wrap {
@@ -609,7 +678,9 @@ select.hospital-input {
 }
 
 .hospital-btn-block {
+  display: flex;
   width: 100%;
+  max-width: 100%;
   justify-content: center;
 }
 
@@ -669,10 +740,12 @@ select.hospital-input {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-width: 0;
   padding: 18px;
   border: 1px solid #e0e2e7;
   border-radius: 8px;
   background: #fafbfc;
+  overflow: hidden;
 }
 
 .hospital-partner-card-head {
@@ -796,23 +869,23 @@ select.hospital-input {
 }
 
 .hospital-flow-note {
-  display: flex;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 8px;
+  align-items: start;
   margin-top: 20px;
   padding: 14px 16px;
   border-radius: 6px;
   background: #fafbfc;
   border: 1px solid #e0e2e7;
   font-size: 13px;
-  line-height: 20px;
+  line-height: 1.5;
   color: #555f6f;
 }
 
 .hospital-flow-note .material-symbols-outlined {
   font-size: 20px;
   color: #a20513;
-  flex-shrink: 0;
 }
 
 .hospital-pagination {
@@ -821,31 +894,36 @@ select.hospital-input {
 }
 
 @media (max-width: 900px) {
-  .hospital-sidebar {
-    width: 72px;
+  .hospital-menu-toggle {
+    display: inline-flex;
   }
 
-  .hospital-sidebar-brand-text,
-  .hospital-sidebar-badge,
-  .hospital-facility-chip,
-  .hospital-sidebar-nav span,
-  .hospital-sidebar-user,
-  .hospital-logout-form span {
+  .hospital-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    background: rgb(24 28 32 / 0.45);
+  }
+
+  .hospital-sidebar-backdrop[hidden] {
     display: none;
   }
 
-  .hospital-sidebar-brand {
-    justify-content: center;
-    padding: 16px 8px;
+  .hospital-sidebar {
+    width: min(280px, 86vw);
+    z-index: 50;
+    transform: translateX(-105%);
+    transition: transform 0.2s ease;
+    box-shadow: 8px 0 24px rgb(0 0 0 / 0.12);
   }
 
-  .hospital-sidebar-nav a {
-    justify-content: center;
-    padding: 12px;
+  .sidebar-open .hospital-sidebar {
+    transform: translateX(0);
   }
 
   .hospital-main {
-    margin-left: 72px;
+    margin-left: 0;
   }
 
   .hospital-content {
@@ -853,7 +931,36 @@ select.hospital-input {
   }
 
   .hospital-topbar {
-    padding: 16px;
+    padding: 14px 16px;
+    align-items: flex-start;
+  }
+
+  .hospital-topbar-status {
+    flex-shrink: 0;
+  }
+
+  .hospital-requests-toolbar,
+  .hospital-request-tabs {
+    width: 100%;
+  }
+
+  .hospital-search-form {
+    max-width: none;
+    width: 100%;
+  }
+
+  .hospital-inventory-pill {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .hospital-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sidebar-open {
+    overflow: hidden;
   }
 }
 
@@ -1225,7 +1332,17 @@ select.hospital-input {
 }
 
 .trace-search-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
   width: 100%;
+  max-width: none;
+}
+
+.trace-search-form .hospital-search-form {
+  flex: 1;
+  min-width: 0;
   max-width: none;
 }
 
@@ -1453,5 +1570,13 @@ select.hospital-input {
 
   .screening-test-checks {
     grid-template-columns: 1fr;
+  }
+
+  .hospital-topbar {
+    flex-wrap: wrap;
+  }
+
+  .hospital-topbar-status {
+    margin-left: 52px;
   }
 }

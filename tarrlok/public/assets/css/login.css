@@ -215,6 +215,14 @@ body {
   padding-right: 48px;
 }
 
+/* Hide browser built-in password reveal so only our toggle shows */
+.login-input-password::-ms-reveal,
+.login-input-password::-ms-clear,
+.reg-input-password::-ms-reveal,
+.reg-input-password::-ms-clear {
+  display: none;
+}
+
 .login-toggle-password {
   position: absolute;
   top: 50%;
@@ -223,11 +231,20 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 28px;
+  height: 28px;
   border: none;
   background: transparent;
   padding: 0;
   cursor: pointer;
   color: #555f6f;
+  z-index: 2;
+}
+
+.login-toggle-password .material-symbols-outlined {
+  font-size: 22px;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .login-toggle-password:hover {

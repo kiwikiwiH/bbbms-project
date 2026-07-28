@@ -99,6 +99,17 @@ class LabStaffController extends Controller
             ->with('status', 'Lab staff account updated.');
     }
 
+    public function destroy(User $user): RedirectResponse
+    {
+        $this->ensureLabStaff($user);
+
+        $user->delete();
+
+        return redirect()
+            ->route('hospital.lab-staff.index')
+            ->with('status', 'Lab staff account deleted.');
+    }
+
     private function ensureLabStaff(User $user): void
     {
         abort_unless(

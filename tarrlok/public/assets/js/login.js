@@ -1,18 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-toggle-password]').forEach((toggle) => {
-    const wrap = toggle.closest('.login-input-wrap, .reg-input-wrap');
-    const passwordInput = wrap?.querySelector('input');
+    if (toggle.dataset.bound === '1') {
+      return;
+    }
+    toggle.dataset.bound = '1';
 
-    if (!passwordInput) {
+    const wrap = toggle.closest('.login-input-wrap, .reg-input-wrap');
+    const passwordInput = wrap?.querySelector('input[type="password"], input[type="text"]');
+    const icon = toggle.querySelector('.material-symbols-outlined');
+
+    if (!passwordInput || !icon) {
       return;
     }
 
     toggle.addEventListener('click', () => {
-      const isHidden = passwordInput.type === 'password';
-      passwordInput.type = isHidden ? 'text' : 'password';
-      toggle.querySelector('.material-symbols-outlined').textContent = isHidden
-        ? 'visibility'
-        : 'visibility_off';
+      const show = passwordInput.type === 'password';
+      passwordInput.type = show ? 'text' : 'password';
+      icon.textContent = show ? 'visibility' : 'visibility_off';
+      toggle.setAttribute(
+        'aria-label',
+        show ? 'Hide password' : 'Show password'
+      );
     });
   });
 });

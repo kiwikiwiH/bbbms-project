@@ -14,17 +14,19 @@
 @section('content')
 <div class="hospital-card trace-search-card">
     <div class="hospital-card-body">
-        <form class="hospital-search-form trace-search-form" method="GET" action="{{ route($portal['traceRoute']) }}">
-            <span class="material-symbols-outlined">search</span>
-            <input
-                type="search"
-                name="q"
-                value="{{ $query }}"
-                placeholder="Enter unit ID, e.g. UNIT-001-00001"
-                class="hospital-search-input"
-                required
-            >
-            <button type="submit" class="hospital-btn hospital-btn-primary hospital-btn-sm">Trace</button>
+        <form class="trace-search-form" method="GET" action="{{ route($portal['traceRoute']) }}">
+            <div class="hospital-search-form">
+                <span class="material-symbols-outlined">search</span>
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ $query }}"
+                    placeholder="Enter unit ID, e.g. UNIT-001-00001"
+                    class="hospital-search-input"
+                    required
+                >
+            </div>
+            <button type="submit" class="hospital-btn hospital-btn-primary">Trace</button>
         </form>
     </div>
 </div>

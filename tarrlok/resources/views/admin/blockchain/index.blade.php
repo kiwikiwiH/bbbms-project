@@ -3,9 +3,20 @@
 @section('title', 'Blockchain - Tarrlok Admin')
 
 @section('content')
-<h1 class="admin-heading">Blockchain audit trail</h1>
-<p class="admin-subheading">Live chain health and on-chain anchors for blood unit lifecycle events.</p>
+@php
+    $total = max(1, (int) $stats['total_units']);
+    $registerPct = (int) round(($stats['registered_on_chain'] / $total) * 100);
+    $screenPct = (int) round(($stats['screened_on_chain'] / $total) * 100);
+    $issuePct = (int) round(($stats['issued_on_chain'] / $total) * 100);
+    $rpcOk = (bool) ($chain['rpcReachable'] ?? false);
+    $contractOk = (bool) ($chain['contractDeployed'] ?? false) && ! empty($chain['contractAddress']);
+    $signerOk = ! empty($chain['signerAddress']);
+@endphp
 
+<h1 class="admin-heading">Blockchain audit trail</h1>
+<p class="admin-subheading">Live visual status of the local chain and on-chain anchors for blood unit events.</p>
+
+{{-- Health banner --}}
 <div class="admin-blockchain-health admin-blockchain-health-{{ $health }}">
     <span class="material-symbols-outlined admin-blockchain-health-icon">
         @if ($health === 'healthy')
@@ -42,141 +53,215 @@
     </div>
 </div>
 
-<div class="admin-stats">
-    <div class="admin-stat">
-        <div class="admin-stat-label">Units registered on-chain</div>
-        <div class="admin-stat-value" style="font-size:28px;">{{ $stats['registered_on_chain'] }}</div>
-        <div class="admin-meta" style="padding:8px 0 0;border:none;background:transparent;">
-            of {{ $stats['total_units'] }} total in database
-        </div>
+{{-- Visual network map --}}
+<section @class(['bc-map', $health === 'healthy' ? 'is-live' : '']) aria-label="Blockchain network status">
+    <div class="bc-map-title">
+        <span class="material-symbols-outlined">hub</span>
+        Network map
+        @if ($health === 'healthy')
+            <span class="bc-live-pill">
+                <i></i> Live traffic
+            </span>
+        @endif
     </div>
-    <div class="admin-stat approved">
-        <div class="admin-stat-label">Screenings anchored</div>
-        <div class="admin-stat-value" style="font-size:28px;">{{ $stats['screened_on_chain'] }}</div>
-    </div>
-    <div class="admin-stat pending">
-        <div class="admin-stat-label">Partner transfers anchored</div>
-        <div class="admin-stat-value" style="font-size:28px;">{{ $stats['issued_on_chain'] }}</div>
-    </div>
-    @if ($chain['blockNumber'] !== null)
-        <div class="admin-stat">
-            <div class="admin-stat-label">Current block</div>
-            <div class="admin-stat-value" style="font-size:28px;">{{ number_format($chain['blockNumber']) }}</div>
+
+    @if ($rpcOk)
+        <div class="bc-block-ticker" aria-hidden="true">
+            <div class="bc-block-ticker-track">
+                @for ($i = 0; $i < 8; $i++)
+                    <span>Block {{ number_format(max(0, ($chain['blockNumber'] ?? 0) - (7 - $i))) }}</span>
+                @endfor
+                @for ($i = 0; $i < 8; $i++)
+                    <span>Block {{ number_format(max(0, ($chain['blockNumber'] ?? 0) - (7 - $i))) }}</span>
+                @endfor
+            </div>
         </div>
     @endif
-</div>
 
-<div class="admin-card" style="margin-bottom:24px;">
-    <div class="admin-card-head">
-        <h2 class="admin-card-title">Infrastructure</h2>
-        <span @class(['admin-badge', match ($health) {
-            'healthy' => 'approved',
-            'degraded' => 'pending',
-            'disabled' => 'rejected',
-            default => 'pending',
-        }])>{{ str_replace('_', ' ', $health) }}</span>
-    </div>
-    <div class="admin-detail-grid">
-        <div class="admin-detail-section">
-            <h3>Laravel configuration</h3>
-            <dl class="admin-detail-list">
-                <div>
-                    <dt>BLOCKCHAIN_ENABLED</dt>
-                    <dd>{{ $configured ? 'true' : 'false' }}</dd>
-                </div>
-                <div>
-                    <dt>RPC URL</dt>
-                    <dd><code>{{ $chain['rpcUrl'] }}</code></dd>
-                </div>
-                <div>
-                    <dt>Signer configured</dt>
-                    <dd>{{ $chain['signerAddress'] ? 'Yes' : 'No' }}</dd>
-                </div>
-            </dl>
+    <div class="bc-pipeline">
+        <article @class(['bc-node', $configured ? 'is-on' : 'is-off']) style="--d:0">
+            <div class="bc-node-orb">
+                <span class="material-symbols-outlined">settings</span>
+            </div>
+            <h3>Laravel</h3>
+            <p>{{ $configured ? 'Anchoring enabled' : 'Disabled in .env' }}</p>
+        </article>
+
+        <div @class(['bc-link', $rpcOk ? 'is-on' : 'is-off']) aria-hidden="true">
+            <div class="bc-link-track"></div>
+            <i class="bc-packet"></i>
+            <i class="bc-packet bc-packet-delay"></i>
         </div>
-        <div class="admin-detail-section">
-            <h3>On-chain contract</h3>
-            <dl class="admin-detail-list">
-                <div>
-                    <dt>RPC reachable</dt>
-                    <dd>{{ ($chain['rpcReachable'] ?? false) ? 'Yes' : 'No' }}</dd>
-                </div>
-                <div>
-                    <dt>Chain ID</dt>
-                    <dd>{{ $chain['chainId'] ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt>BloodBank contract</dt>
-                    <dd>
-                        @if ($chain['contractAddress'])
-                            <code class="admin-tx-hash">{{ $chain['contractAddress'] }}</code>
-                        @else
-                            Not deployed
-                        @endif
-                    </dd>
-                </div>
-                <div>
-                    <dt>Contract owner</dt>
-                    <dd>
-                        @if ($chain['contractOwner'])
-                            <code class="admin-tx-hash">{{ $chain['contractOwner'] }}</code>
-                        @else
-                            —
-                        @endif
-                    </dd>
-                </div>
-                @if ($chain['signerAddress'])
-                    <div>
-                        <dt>Signer wallet</dt>
-                        <dd><code class="admin-tx-hash">{{ $chain['signerAddress'] }}</code></dd>
-                    </div>
-                    <div>
-                        <dt>Signer balance</dt>
-                        <dd>{{ $chain['signerBalanceEth'] }} ETH</dd>
-                    </div>
+
+        <article @class(['bc-node', $rpcOk ? 'is-on' : 'is-off']) style="--d:1">
+            <div class="bc-node-orb">
+                <span class="material-symbols-outlined">dns</span>
+                @if ($rpcOk)
+                    <i class="bc-pulse"></i>
                 @endif
-                @if ($chain['deployedAt'])
-                    <div>
-                        <dt>Deployed at</dt>
-                        <dd>{{ \Illuminate\Support\Carbon::parse($chain['deployedAt'])->format('M j, Y g:i A') }}</dd>
-                    </div>
+            </div>
+            <h3>Hardhat node</h3>
+            <p>
+                @if ($rpcOk)
+                    Block {{ number_format($chain['blockNumber'] ?? 0) }}
+                    @if ($chain['chainId']) · chain {{ $chain['chainId'] }} @endif
+                @else
+                    Offline / unreachable
                 @endif
-            </dl>
+            </p>
+        </article>
+
+        <div @class(['bc-link', $contractOk ? 'is-on' : 'is-off']) aria-hidden="true">
+            <div class="bc-link-track"></div>
+            <i class="bc-packet"></i>
+            <i class="bc-packet bc-packet-delay"></i>
         </div>
+
+        <article @class(['bc-node', $contractOk ? 'is-on' : 'is-off']) style="--d:2">
+            <div class="bc-node-orb">
+                <span class="material-symbols-outlined">token</span>
+            </div>
+            <h3>BloodBank.sol</h3>
+            <p>
+                @if ($contractOk)
+                    Deployed
+                @else
+                    Not deployed
+                @endif
+            </p>
+        </article>
+
+        <div @class(['bc-link', $signerOk && $health === 'healthy' ? 'is-on' : 'is-off']) aria-hidden="true">
+            <div class="bc-link-track"></div>
+            <i class="bc-packet"></i>
+            <i class="bc-packet bc-packet-delay"></i>
+        </div>
+
+        <article @class(['bc-node', $signerOk ? 'is-on' : 'is-off']) style="--d:3">
+            <div class="bc-node-orb">
+                <span class="material-symbols-outlined">account_balance_wallet</span>
+            </div>
+            <h3>Signer wallet</h3>
+            <p>
+                @if ($signerOk)
+                    {{ number_format((float) ($chain['signerBalanceEth'] ?? 0), 2) }} ETH
+                @else
+                    Key missing
+                @endif
+            </p>
+        </article>
     </div>
+
+    @if ($chain['contractAddress'] || $chain['signerAddress'])
+        <div class="bc-address-row">
+            @if ($chain['contractAddress'])
+                <div class="bc-address">
+                    <span>Contract</span>
+                    <code title="{{ $chain['contractAddress'] }}">{{ $chain['contractAddress'] }}</code>
+                </div>
+            @endif
+            @if ($chain['signerAddress'])
+                <div class="bc-address">
+                    <span>Signer</span>
+                    <code title="{{ $chain['signerAddress'] }}">{{ $chain['signerAddress'] }}</code>
+                </div>
+            @endif
+        </div>
+    @endif
+
     @if (! empty($chain['errors']))
-        <div class="admin-meta">
-            <strong>Issues detected:</strong>
-            <ul class="admin-blockchain-errors">
+        <div class="bc-errors">
+            <strong>Issues</strong>
+            <ul>
                 @foreach ($chain['errors'] as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
         </div>
     @endif
-</div>
+</section>
 
-<div class="admin-card" style="margin-bottom:24px;">
-    <div class="admin-card-head">
-        <h2 class="admin-card-title">How anchoring works</h2>
+{{-- Visual lifecycle flow --}}
+<section class="bc-flow-card" aria-label="Anchoring lifecycle">
+    <div class="bc-map-title">
+        <span class="material-symbols-outlined">timeline</span>
+        What gets written on-chain
     </div>
-    <div class="admin-meta" style="border-top:none;">
-        <ol class="admin-blockchain-flow">
-            <li><strong>Lab registers unit</strong> → <code>UnitRegistered</code> event → saved as <code>blockchain_register_tx</code></li>
-            <li><strong>Lab completes screening</strong> → <code>UnitScreened</code> event → <code>blockchain_screening_tx</code></li>
-            <li><strong>Hospital issues to partner</strong> → <code>UnitIssued</code> event → <code>blockchain_issue_tx</code></li>
-        </ol>
-        <p style="margin:12px 0 0;">
-            Donors see hashes on <a href="{{ route('track.index') }}">public unit tracking</a>.
-            Hospital/lab staff see the same on trace pages.
-        </p>
+    <div class="bc-flow-steps">
+        <div class="bc-flow-step" style="--d:0">
+            <div class="bc-flow-icon">
+                <span class="material-symbols-outlined">science</span>
+            </div>
+            <div class="bc-flow-copy">
+                <strong>1. Register unit</strong>
+                <p>Lab records a donation</p>
+                <code>UnitRegistered</code>
+            </div>
+        </div>
+        <div class="bc-flow-arrow" aria-hidden="true">
+            <span class="material-symbols-outlined">arrow_forward</span>
+        </div>
+        <div class="bc-flow-step" style="--d:1">
+            <div class="bc-flow-icon">
+                <span class="material-symbols-outlined">biotech</span>
+            </div>
+            <div class="bc-flow-copy">
+                <strong>2. Screening</strong>
+                <p>Cleared or failed tests</p>
+                <code>UnitScreened</code>
+            </div>
+        </div>
+        <div class="bc-flow-arrow" aria-hidden="true">
+            <span class="material-symbols-outlined">arrow_forward</span>
+        </div>
+        <div class="bc-flow-step" style="--d:2">
+            <div class="bc-flow-icon">
+                <span class="material-symbols-outlined">swap_horiz</span>
+            </div>
+            <div class="bc-flow-copy">
+                <strong>3. Partner issue</strong>
+                <p>Transfer to another hospital</p>
+                <code>UnitIssued</code>
+            </div>
+        </div>
     </div>
-</div>
+</section>
 
-<div class="admin-card">
+{{-- Coverage meters --}}
+<section class="bc-coverage" aria-label="Anchoring coverage">
+    <div class="bc-coverage-card" style="--d:0">
+        <div class="bc-coverage-head">
+            <span>Registrations anchored</span>
+            <strong>{{ $stats['registered_on_chain'] }}/{{ $stats['total_units'] }}</strong>
+        </div>
+        <div class="bc-meter"><i style="--w: {{ $registerPct }}%"></i></div>
+        <small>{{ $registerPct }}% of units in the database</small>
+    </div>
+    <div class="bc-coverage-card" style="--d:1">
+        <div class="bc-coverage-head">
+            <span>Screenings anchored</span>
+            <strong>{{ $stats['screened_on_chain'] }}/{{ $stats['total_units'] }}</strong>
+        </div>
+        <div class="bc-meter"><i style="--w: {{ $screenPct }}%"></i></div>
+        <small>{{ $screenPct }}% coverage</small>
+    </div>
+    <div class="bc-coverage-card" style="--d:2">
+        <div class="bc-coverage-head">
+            <span>Transfers anchored</span>
+            <strong>{{ $stats['issued_on_chain'] }}/{{ $stats['total_units'] }}</strong>
+        </div>
+        <div class="bc-meter bc-meter-issue"><i style="--w: {{ $issuePct }}%"></i></div>
+        <small>{{ $issuePct }}% coverage</small>
+    </div>
+</section>
+
+{{-- Recent units as visual chains --}}
+<section class="admin-card bc-recent">
     <div class="admin-card-head">
         <h2 class="admin-card-title">Recent anchored units</h2>
+        <a href="{{ route('track.index') }}" class="admin-btn admin-btn-outline" style="padding:8px 12px;font-size:13px;">Public track</a>
     </div>
+
     @if ($recentUnits->isEmpty())
         <div class="admin-empty">
             No blockchain transactions recorded yet.
@@ -185,60 +270,66 @@
             @endif
         </div>
     @else
-        <div class="admin-table-wrap">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Unit</th>
-                        <th>Facility</th>
-                        <th>Registration</th>
-                        <th>Screening</th>
-                        <th>Issue</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($recentUnits as $unit)
-                        <tr>
-                            <td><strong>{{ $unit->unit_code }}</strong><br><span style="font-size:12px;color:#555f6f;">{{ $unit->blood_group }}</span></td>
-                            <td>{{ $unit->hospital->name }}</td>
-                            <td>
+        <div class="bc-unit-list">
+            @foreach ($recentUnits as $unit)
+                <article class="bc-unit-card" style="--d: {{ $loop->index }}">
+                    <div class="bc-unit-top">
+                        <div>
+                            <strong>{{ $unit->unit_code }}</strong>
+                            <span class="bc-unit-meta">{{ $unit->blood_group }} · {{ $unit->hospital->name }}</span>
+                        </div>
+                        <a href="{{ route('track.show', $unit) }}" target="_blank" rel="noopener">View track</a>
+                    </div>
+
+                    <div class="bc-unit-chain" aria-label="On-chain stages for {{ $unit->unit_code }}">
+                        <div @class(['bc-stage', $unit->blockchain_register_tx ? 'done' : 'missing'])>
+                            <span class="bc-stage-dot"></span>
+                            <div>
+                                <strong>Registered</strong>
                                 @if ($unit->blockchain_register_tx)
-                                    <code class="admin-tx-hash" title="{{ $unit->blockchain_register_tx }}">{{ Str::limit($unit->blockchain_register_tx, 14, '…') }}</code>
+                                    <code title="{{ $unit->blockchain_register_tx }}">{{ Str::limit($unit->blockchain_register_tx, 18, '…') }}</code>
                                 @else
-                                    <span class="admin-tx-missing">—</span>
+                                    <em>Not anchored</em>
                                 @endif
-                            </td>
-                            <td>
+                            </div>
+                        </div>
+                        <div @class(['bc-stage-line', $unit->blockchain_register_tx && $unit->blockchain_screening_tx ? 'is-active' : '']) aria-hidden="true"></div>
+                        <div @class(['bc-stage', $unit->blockchain_screening_tx ? 'done' : 'missing'])>
+                            <span class="bc-stage-dot"></span>
+                            <div>
+                                <strong>Screened</strong>
                                 @if ($unit->blockchain_screening_tx)
-                                    <code class="admin-tx-hash" title="{{ $unit->blockchain_screening_tx }}">{{ Str::limit($unit->blockchain_screening_tx, 14, '…') }}</code>
+                                    <code title="{{ $unit->blockchain_screening_tx }}">{{ Str::limit($unit->blockchain_screening_tx, 18, '…') }}</code>
                                 @else
-                                    <span class="admin-tx-missing">—</span>
+                                    <em>Not anchored</em>
                                 @endif
-                            </td>
-                            <td>
+                            </div>
+                        </div>
+                        <div @class(['bc-stage-line', $unit->blockchain_screening_tx && $unit->blockchain_issue_tx ? 'is-active' : '']) aria-hidden="true"></div>
+                        <div @class(['bc-stage', $unit->blockchain_issue_tx ? 'done' : 'missing'])>
+                            <span class="bc-stage-dot"></span>
+                            <div>
+                                <strong>Issued</strong>
                                 @if ($unit->blockchain_issue_tx)
-                                    <code class="admin-tx-hash" title="{{ $unit->blockchain_issue_tx }}">{{ Str::limit($unit->blockchain_issue_tx, 14, '…') }}</code>
+                                    <code title="{{ $unit->blockchain_issue_tx }}">{{ Str::limit($unit->blockchain_issue_tx, 18, '…') }}</code>
                                 @else
-                                    <span class="admin-tx-missing">—</span>
+                                    <em>Not anchored</em>
                                 @endif
-                            </td>
-                            <td>
-                                <a href="{{ route('track.show', $unit) }}" target="_blank" rel="noopener">Track</a>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            @endforeach
         </div>
+
         @if ($stats['missing_register'] > 0 || $stats['missing_screening'] > 0)
             <div class="admin-meta">
                 <strong>Gap check:</strong>
                 {{ $stats['missing_register'] }} unit(s) without registration tx;
                 {{ $stats['missing_screening'] }} screened unit(s) without screening tx
-                (usually means chain was offline when those actions ran).
+                (usually means the chain was offline when those actions ran).
             </div>
         @endif
     @endif
-</div>
+</section>
 @endsection

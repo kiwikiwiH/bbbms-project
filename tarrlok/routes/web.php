@@ -75,6 +75,7 @@ Route::middleware(['auth', 'hospital'])->prefix('hospital')->name('hospital.')->
         ->whereNumber('user');
     Route::get('/lab-staff/{user}/edit', [LabStaffController::class, 'edit'])->name('lab-staff.edit')->whereNumber('user');
     Route::patch('/lab-staff/{user}', [LabStaffController::class, 'update'])->name('lab-staff.update')->whereNumber('user');
+    Route::delete('/lab-staff/{user}', [LabStaffController::class, 'destroy'])->name('lab-staff.destroy')->whereNumber('user');
 });
 
 Route::middleware(['auth', 'lab'])->prefix('lab')->name('lab.')->group(function () {

@@ -42,11 +42,15 @@ class RegistrationReviewController extends Controller
         return view('admin.registrations.show', compact('hospital'));
     }
 
-    public function approve(Hospital $hospital): RedirectResponse
+    public function approve(Request $request, Hospital $hospital): RedirectResponse
     {
         if ($hospital->status === 'approved') {
             return back()->with('status', 'This facility is already approved.');
         }
+
+        $validated = $request->validate([
+            'admin_message' => ['nullable', 'string', 'max:2000'],
+        ]);
 
         DB::transaction(function () use ($hospital) {
             $hospital->update([
@@ -62,18 +66,25 @@ class RegistrationReviewController extends Controller
         $hospital->load('users');
         $contact = $hospital->primaryContact();
         if ($contact) {
-            Notification::send($contact, new HospitalRegistrationApproved($hospital));
+            Notification::send(
+                $contact,
+                new HospitalRegistrationApproved(
+                    $hospital,
+                    $validated['admin_message'] ?? null,
+                )
+            );
         }
 
         return redirect()
             ->route('admin.registrations.show', $hospital)
-            ->with('status', 'Facility approved. The administrator can now sign in.');
+            ->with('status', 'Facility approved. An official email has been sent to the hospital administrator.');
     }
 
     public function reject(Request $request, Hospital $hospital): RedirectResponse
     {
         $validated = $request->validate([
             'rejection_reason' => ['required', 'string', 'min:10', 'max:1000'],
+            'admin_message' => ['nullable', 'string', 'max:2000'],
         ]);
 
         if ($hospital->status === 'rejected') {
@@ -94,11 +105,17 @@ class RegistrationReviewController extends Controller
         $hospital->load('users');
         $contact = $hospital->primaryContact();
         if ($contact) {
-            Notification::send($contact, new HospitalRegistrationRejected($hospital));
+            Notification::send(
+                $contact,
+                new HospitalRegistrationRejected(
+                    $hospital,
+                    $validated['admin_message'] ?? null,
+                )
+            );
         }
 
         return redirect()
             ->route('admin.registrations.show', $hospital)
-            ->with('status', 'Facility registration rejected.');
+            ->with('status', 'Facility registration rejected. An official email has been sent to the hospital administrator.');
     }
 }

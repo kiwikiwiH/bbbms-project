@@ -50,13 +50,20 @@
                             </td>
                             <td>{{ $staff->created_at->format('M j, Y') }}</td>
                             <td>
-                                <form method="POST" action="{{ route('hospital.lab-staff.toggle', $staff) }}" style="display:inline;">
-                                    @csrf
-                                    <button type="submit" class="hospital-btn hospital-btn-outline hospital-btn-sm">
-                                        {{ $staff->status === 'active' ? 'Suspend' : 'Reactivate' }}
-                                    </button>
-                                </form>
-                                <a href="{{ route('hospital.lab-staff.edit', $staff) }}" class="hospital-btn hospital-btn-outline hospital-btn-sm">Edit</a>
+                                <div class="hospital-table-actions">
+                                    <form method="POST" action="{{ route('hospital.lab-staff.toggle', $staff) }}">
+                                        @csrf
+                                        <button type="submit" class="hospital-btn hospital-btn-outline hospital-btn-sm">
+                                            {{ $staff->status === 'active' ? 'Suspend' : 'Reactivate' }}
+                                        </button>
+                                    </form>
+                                    <a href="{{ route('hospital.lab-staff.edit', $staff) }}" class="hospital-btn hospital-btn-outline hospital-btn-sm">Edit</a>
+                                    <form method="POST" action="{{ route('hospital.lab-staff.destroy', $staff) }}" onsubmit="return confirm('Delete {{ $staff->name }}? This cannot be undone.');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="hospital-btn hospital-btn-danger hospital-btn-sm">Delete</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @endforeach
