@@ -6,6 +6,7 @@
     </a>
     <div class="admin-topbar-actions">
         <span class="admin-user">{{ auth()->user()->name }}</span>
+        <a href="{{ route('profile.edit') }}" class="admin-profile-link">Profile</a>
         <form class="admin-logout-form" method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit">Sign out</button>

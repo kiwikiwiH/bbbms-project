@@ -58,7 +58,9 @@
                 <tbody>
                     @foreach ($units as $unit)
                         <tr>
-                            <td><span class="hospital-request-id">{{ $unit->unit_code }}</span></td>
+                            <td>
+                                <a href="{{ route('lab.trace.show', $unit) }}" class="hospital-request-id">{{ $unit->unit_code }}</a>
+                            </td>
                             <td><span class="hospital-blood-group">{{ $unit->blood_group }}</span></td>
                             <td>
                                 <span @class(['hospital-screening-badge', $unit->screening_status])>

@@ -2,7 +2,9 @@
 
 Local Ethereum **audit log** for blood unit lifecycle events. The Laravel app calls this layer after saving data to MySQL.
 
-The chain runs on **your server only** (`127.0.0.1:8545`). It is **not** exposed through Cloudflare Tunnel — remote users see **tx hashes** stored in MySQL on trace/track pages and the admin blockchain dashboard.
+The chain runs on **your server only** (`127.0.0.1:8545`). It is **not** exposed through Cloudflare Tunnel.
+
+Stakeholders (admin, hospital, lab) are **consortium readers** of one permissioned chain — not separate Geth nodes. Each portal opens the same shared ledger: on-chain events, DB-vs-chain integrity alerts, and blocked write attempts.
 
 ## What gets anchored
 
@@ -73,16 +75,19 @@ node scripts/anchor-event.js
        ↓
 BloodBank.sol (ethers.js transaction)
        ↓
-tx hash → saved on blood_units → shown on trace / track / admin pages
+tx hash → saved on blood_units → shown on trace / track / every portal ledger
+       ↓ (on revert)
+blockchain_tamper_attempts → visible to admin, hospital, and lab
 ```
 
 ## Verify it works
 
-### Admin dashboard (recommended)
+### Shared ledger (recommended)
 
-1. Sign in as platform admin
-2. Open **Blockchain** → `/admin/blockchain`
-3. Expect **healthy** status, block number, contract address, anchor counts
+1. Sign in as admin, hospital, or lab
+2. Open **Blockchain** / **Network ledger**
+3. Expect the same network activity, integrity alerts, and blocked attempts on every portal
+4. Admin also keeps chain health, block number, contract address, and coverage meters
 
 ### Lab workflow
 
@@ -95,9 +100,10 @@ tx hash → saved on blood_units → shown on trace / track / admin pages
 
 ```bash
 node scripts/chain-status.js
+node scripts/read-ledger.js "{\"action\":\"ledger\",\"unitCodes\":[]}"
 ```
 
-Returns JSON with RPC reachability, block number, contract address, and errors (exits quickly if node is offline).
+`chain-status.js` returns RPC reachability, block number, contract address, and errors. `read-ledger.js` returns decoded events and optional `getUnit` snapshots.
 
 ## Deployed server + Cloudflare Tunnel
 
@@ -114,6 +120,8 @@ On the server, keep **three** processes running for a full demo:
 3. `cloudflared tunnel run …`
 
 See [docs/DEPLOY-LOCAL-CLOUDFLARE.md](../docs/DEPLOY-LOCAL-CLOUDFLARE.md).
+
+Project overview and FYP report: [../README.md](../README.md) · [../Final_Year_Project_Report_Blockchain_based_blood_bank_management.docx](../Final_Year_Project_Report_Blockchain_based_blood_bank_management.docx)
 
 ## Troubleshooting
 
@@ -134,4 +142,5 @@ See [docs/DEPLOY-LOCAL-CLOUDFLARE.md](../docs/DEPLOY-LOCAL-CLOUDFLARE.md).
 | `scripts/deploy.js` | Deploy to local chain |
 | `scripts/anchor-event.js` | Called by Laravel to send transactions |
 | `scripts/chain-status.js` | Chain health probe for admin dashboard |
+| `scripts/read-ledger.js` | Shared event + `getUnit` reader for every portal |
 | `deployments/local.json` | Contract address + ABI (generated) |

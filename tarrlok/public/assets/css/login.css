@@ -40,6 +40,16 @@ body {
   margin-bottom: 32px;
 }
 
+.login-brand-home {
+  display: inline-block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.login-brand-home:hover .login-title {
+  color: #a20513;
+}
+
 .login-brand-icon {
   display: inline-flex;
   align-items: center;

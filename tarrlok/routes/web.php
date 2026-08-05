@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BloodUnitTraceController;
+use App\Http\Controllers\BlockchainLedgerController;
 use App\Http\Controllers\Admin\BlockchainController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\RegistrationReviewController;
@@ -15,26 +16,11 @@ use App\Http\Controllers\Lab\BloodUnitController as LabBloodUnitController;
 use App\Http\Controllers\Lab\DashboardController as LabDashboardController;
 use App\Http\Controllers\Lab\DonorLookupController;
 use App\Http\Controllers\DonationTrackController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    if (! auth()->check()) {
-        return redirect()->route('login');
-    }
-
-    $user = auth()->user();
-
-    if ($user->isAdmin()) {
-        return redirect()->route('admin.dashboard');
-    }
-
-    if ($user->isLab()) {
-        return redirect()->route('lab.dashboard');
-    }
-
-    return redirect()->route('hospital.dashboard');
-});
+Route::get('/', LandingController::class)->name('home');
 
 Route::get('/dashboard', function () {
     $user = auth()->user();
@@ -67,6 +53,7 @@ Route::middleware(['auth', 'hospital'])->prefix('hospital')->name('hospital.')->
     Route::get('/partners', [PartnerExchangeController::class, 'index'])->name('partners');
     Route::get('/trace', [BloodUnitTraceController::class, 'index'])->name('trace');
     Route::get('/trace/{bloodUnit}', [BloodUnitTraceController::class, 'show'])->name('trace.show');
+    Route::get('/blockchain', BlockchainLedgerController::class)->name('blockchain');
     Route::get('/facility', [FacilityController::class, 'show'])->name('facility');
     Route::patch('/facility', [FacilityController::class, 'update'])->name('facility.update');
     Route::get('/lab-staff', [LabStaffController::class, 'index'])->name('lab-staff.index');
@@ -90,6 +77,7 @@ Route::middleware(['auth', 'lab'])->prefix('lab')->name('lab.')->group(function 
     Route::post('/units/{bloodUnit}/screening', [BloodScreeningController::class, 'update'])->name('units.screening.update');
     Route::get('/trace', [BloodUnitTraceController::class, 'index'])->name('trace');
     Route::get('/trace/{bloodUnit}', [BloodUnitTraceController::class, 'show'])->name('trace.show');
+    Route::get('/blockchain', BlockchainLedgerController::class)->name('blockchain');
     Route::get('/donors/lookup', DonorLookupController::class)->name('donors.lookup');
 });
 

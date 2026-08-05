@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\BlockchainLedgerService;
 use App\Services\BlockchainStatusService;
 use Illuminate\View\View;
 
 class BlockchainController extends Controller
 {
-    public function __invoke(BlockchainStatusService $status): View
+    public function __invoke(BlockchainStatusService $status, BlockchainLedgerService $ledger): View
     {
         $chain = $status->getChainStatus();
 
@@ -18,6 +19,9 @@ class BlockchainController extends Controller
             'health' => $status->overallHealth($chain),
             'stats' => $status->getAnchoringStats(),
             'recentUnits' => $status->getRecentAnchoredUnits(),
+            ...$ledger->snapshot(),
+            'traceRoute' => 'admin.trace',
+            'traceShowRoute' => 'admin.trace.show',
         ]);
     }
 }

@@ -599,6 +599,11 @@ select.hospital-input {
   color: #a20513;
   font-weight: 600;
   font-size: 13px;
+  text-decoration: none;
+}
+
+a.hospital-request-id:hover {
+  text-decoration: underline;
 }
 
 .hospital-blood-group {

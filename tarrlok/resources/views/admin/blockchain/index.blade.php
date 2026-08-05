@@ -2,6 +2,10 @@
 
 @section('title', 'Blockchain - Tarrlok Admin')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('assets/css/ledger.css') }}">
+@endpush
+
 @section('content')
 @php
     $total = max(1, (int) $stats['total_units']);
@@ -278,7 +282,7 @@
                             <strong>{{ $unit->unit_code }}</strong>
                             <span class="bc-unit-meta">{{ $unit->blood_group }} · {{ $unit->hospital->name }}</span>
                         </div>
-                        <a href="{{ route('track.show', $unit) }}" target="_blank" rel="noopener">View track</a>
+                        <a href="{{ route('admin.trace.show', $unit) }}">Trace unit</a>
                     </div>
 
                     <div class="bc-unit-chain" aria-label="On-chain stages for {{ $unit->unit_code }}">
@@ -332,4 +336,6 @@
         @endif
     @endif
 </section>
+
+@include('shared.blockchain.ledger')
 @endsection

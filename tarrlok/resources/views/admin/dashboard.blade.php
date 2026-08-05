@@ -7,18 +7,18 @@
 <p class="admin-subheading">Review and approve hospital facility registrations for the Tarrlok network.</p>
 
 <div class="admin-stats">
-    <div class="admin-stat pending">
+    <a href="{{ route('admin.registrations.index', ['status' => 'pending']) }}" class="admin-stat pending">
         <div class="admin-stat-label">Pending Review</div>
         <div class="admin-stat-value">{{ $counts['pending'] }}</div>
-    </div>
-    <div class="admin-stat approved">
+    </a>
+    <a href="{{ route('admin.registrations.index', ['status' => 'approved']) }}" class="admin-stat approved">
         <div class="admin-stat-label">Approved</div>
         <div class="admin-stat-value">{{ $counts['approved'] }}</div>
-    </div>
-    <div class="admin-stat rejected">
+    </a>
+    <a href="{{ route('admin.registrations.index', ['status' => 'rejected']) }}" class="admin-stat rejected">
         <div class="admin-stat-label">Rejected</div>
         <div class="admin-stat-value">{{ $counts['rejected'] }}</div>
-    </div>
+    </a>
 </div>
 
 <div class="admin-card" style="margin-bottom:24px;">

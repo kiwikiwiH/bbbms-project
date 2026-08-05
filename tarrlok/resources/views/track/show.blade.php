@@ -16,6 +16,7 @@
 
     <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
         <a href="{{ route('track.index') }}" class="hospital-btn hospital-btn-outline">Track another unit</a>
+        <a href="{{ route('home') }}" class="hospital-btn hospital-btn-outline">Back to home</a>
         <a href="{{ route('login') }}" class="hospital-btn hospital-btn-outline">Staff sign in</a>
     </div>
 </main>

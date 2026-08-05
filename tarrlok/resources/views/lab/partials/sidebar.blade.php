@@ -28,13 +28,17 @@
             <span class="material-symbols-outlined">add_circle</span>
             <span>Register unit</span>
         </a>
-        <a href="{{ route('lab.units.index') }}" @class(['active' => str_starts_with($route ?? '', 'lab.units')]) title="Inventory">
+        <a href="{{ route('lab.units.index') }}" @class(['active' => str_starts_with($route ?? '', 'lab.units') && $route !== 'lab.units.create']) title="Inventory">
             <span class="material-symbols-outlined">inventory_2</span>
             <span>Inventory</span>
         </a>
         <a href="{{ route('lab.trace') }}" @class(['active' => str_starts_with($route ?? '', 'lab.trace')]) title="Trace Unit">
             <span class="material-symbols-outlined">timeline</span>
             <span>Trace Unit</span>
+        </a>
+        <a href="{{ route('lab.blockchain') }}" @class(['active' => $route === 'lab.blockchain']) title="Network ledger">
+            <span class="material-symbols-outlined">hub</span>
+            <span>Network ledger</span>
         </a>
     </nav>
 

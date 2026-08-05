@@ -3,6 +3,7 @@
 Main Laravel application for **Tarrlok** — the blockchain-based blood bank management system.
 
 Full documentation: **[project README](../README.md)**  
+FYP report: **[../Final_Year_Project_Report_Blockchain_based_blood_bank_management.docx](../Final_Year_Project_Report_Blockchain_based_blood_bank_management.docx)**  
 Docker (all-in-one): **[docs/DOCKER.md](../docs/DOCKER.md)**
 
 ## Quick start
@@ -49,7 +50,7 @@ BLOCKCHAIN_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7
 php artisan config:clear
 ```
 
-Verify: sign in as admin → **Blockchain** (`/admin/blockchain`).
+Verify: sign in as admin, hospital, or lab → **Blockchain / Network ledger**. Every portal reads the same on-chain event log, integrity alerts, and blocked attempts.
 
 Details: [blockchain/README.md](../blockchain/README.md)
 
@@ -88,11 +89,18 @@ Run on a local server and expose via Cloudflare Tunnel:
 
 | Path | Purpose |
 |------|---------|
-| `app/Services/BlockchainService.php` | Anchors events on-chain |
+| `app/Services/BlockchainService.php` | Anchors events on-chain + records blocked attempts |
 | `app/Services/BlockchainStatusService.php` | Admin chain health + stats |
+| `app/Services/BlockchainIntegrityService.php` | MySQL vs `getUnit()` compare |
+| `app/Services/BlockchainLedgerService.php` | Shared event feed + integrity snapshot |
+| `app/Models/BlockchainTamperAttempt.php` | Failed / reverted chain writes |
 | `app/Http/Controllers/DonationTrackController.php` | Public `/track` |
 | `app/Http/Controllers/Admin/BlockchainController.php` | Admin blockchain page |
+| `app/Http/Controllers/BlockchainLedgerController.php` | Hospital + lab shared ledger |
+| `resources/views/landing.blade.php` | Public home |
+| `resources/views/shared/blockchain/` | Shared ledger Blade views |
 | `config/tarrlok.php` | Blood groups, regions, shelf life, expiry |
 | `config/blockchain.php` | RPC, private key, scripts |
 | `database/seeders/DemoSeeder.php` | Korle Bu + Ridge demo data |
-| `public/assets/css/` | Tarrlok UI styles |
+| `public/assets/css/` | Landing, portal, and ledger styles |
+| `tests/Feature/` | Auth, navigation, shared-ledger tests |

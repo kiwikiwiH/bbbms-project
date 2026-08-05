@@ -38,6 +38,7 @@
                 @if ($expiredCount > 0)
                     · {{ $expiredCount }} expired
                 @endif
+                · <a href="{{ route('hospital.inventory') }}" style="color:#a20513;">Review</a>
             </div>
         </div>
     @endif
@@ -64,6 +65,7 @@
 <div class="hospital-card">
     <div class="hospital-card-head">
         <h2 class="hospital-card-title">Your facility</h2>
+        <a href="{{ route('hospital.facility') }}" class="hospital-btn hospital-btn-outline hospital-btn-sm">Edit profile</a>
     </div>
     <div class="hospital-card-body">
         <dl class="hospital-detail-grid">

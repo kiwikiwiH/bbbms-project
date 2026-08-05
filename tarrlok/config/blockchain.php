@@ -14,6 +14,8 @@ return [
 
     'status_script' => 'blockchain/scripts/chain-status.js',
 
+    'ledger_script' => 'blockchain/scripts/read-ledger.js',
+
     // Optional: https://etherscan.io/tx/{hash} — leave null for local Hardhat
     'explorer_tx_url' => env('BLOCKCHAIN_EXPLORER_TX_URL'),
 ];

@@ -46,6 +46,7 @@
                 @if ($expiredCount > 0)
                     · {{ $expiredCount }} expired
                 @endif
+                · <a href="{{ route('lab.units.index') }}" style="color:#a20513;">Review</a>
             </div>
         </div>
     @endif
@@ -86,6 +87,14 @@
     <a href="{{ route('lab.units.index') }}" class="hospital-btn hospital-btn-outline">
         <span class="material-symbols-outlined">inventory_2</span>
         View inventory
+    </a>
+    <a href="{{ route('lab.trace') }}" class="hospital-btn hospital-btn-outline">
+        <span class="material-symbols-outlined">timeline</span>
+        Trace unit
+    </a>
+    <a href="{{ route('lab.blockchain') }}" class="hospital-btn hospital-btn-outline">
+        <span class="material-symbols-outlined">hub</span>
+        Network ledger
     </a>
 </div>
 @endsection

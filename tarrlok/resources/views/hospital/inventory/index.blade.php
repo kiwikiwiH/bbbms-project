@@ -45,7 +45,7 @@
             <ul class="hospital-expiry-list">
                 @foreach ($expiringSoon as $unit)
                     <li>
-                        <span class="hospital-request-id">{{ $unit->unit_code }}</span>
+                        <a href="{{ route('hospital.trace.show', $unit) }}" class="hospital-request-id">{{ $unit->unit_code }}</a>
                         <span class="hospital-blood-group">{{ $unit->blood_group }}</span>
                         <span class="hospital-expiry-badge warning">Expires {{ $unit->expires_at->format('M j, Y') }}</span>
                     </li>
@@ -80,7 +80,9 @@
                 <tbody>
                     @foreach ($units->flatten() as $unit)
                         <tr>
-                            <td><span class="hospital-request-id">{{ $unit->unit_code }}</span></td>
+                            <td>
+                                <a href="{{ route('hospital.trace.show', $unit) }}" class="hospital-request-id">{{ $unit->unit_code }}</a>
+                            </td>
                             <td><span class="hospital-blood-group">{{ $unit->blood_group }}</span></td>
                             <td>
                                 <span @class(['hospital-screening-badge', $unit->screening_status])>

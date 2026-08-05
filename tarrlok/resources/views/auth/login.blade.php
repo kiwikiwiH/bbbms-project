@@ -6,10 +6,12 @@
 <main class="login-shell">
     {{-- Branding Header --}}
     <div class="login-brand">
-        <div class="login-brand-icon">
-            <span class="material-symbols-outlined login-brand-glyph filled">bloodtype</span>
-        </div>
-        <h1 class="login-title">Tarrlok</h1>
+        <a href="{{ route('home') }}" class="login-brand-home">
+            <div class="login-brand-icon">
+                <span class="material-symbols-outlined login-brand-glyph filled">bloodtype</span>
+            </div>
+            <h1 class="login-title">Tarrlok</h1>
+        </a>
         <p class="login-subtitle">Blockchain-Verified Blood Traceability</p>
     </div>
 

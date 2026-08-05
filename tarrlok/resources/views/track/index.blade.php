@@ -5,10 +5,12 @@
 @section('content')
 <main class="login-shell" style="max-width:480px;">
     <div class="login-brand">
-        <div class="login-brand-icon">
-            <span class="material-symbols-outlined login-brand-glyph filled">favorite</span>
-        </div>
-        <h1 class="login-title">Track your donation</h1>
+        <a href="{{ route('home') }}" class="login-brand-home">
+            <div class="login-brand-icon">
+                <span class="material-symbols-outlined login-brand-glyph filled">favorite</span>
+            </div>
+            <h1 class="login-title">Track your donation</h1>
+        </a>
         <p class="login-subtitle">Enter the unit ID from your donation slip — you can only view that donation</p>
     </div>
 

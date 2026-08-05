@@ -2,6 +2,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('assets/css/hospital.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/css/ledger.css') }}">
 @endpush
 
 @section('title', 'Trace Unit - Tarrlok')
@@ -166,6 +167,27 @@
             @if ($unit->blockchain_register_tx || $unit->blockchain_screening_tx || $unit->blockchain_issue_tx)
                 <div class="trace-blockchain-panel">
                     <h3 class="screening-report-heading">Blockchain audit trail</h3>
+                    @if (! empty($integrity))
+                        <div class="trace-integrity">
+                            <div>
+                                <span @class(['ledger-badge', $integrity['status']])>{{ $integrity['label'] }}</span>
+                                @if ($integrity['mismatches'])
+                                    <div class="trace-integrity-copy">
+                                        <ul>
+                                            @foreach ($integrity['mismatches'] as $mismatch)
+                                                <li>{{ $mismatch }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @elseif ($integrity['status'] === 'match')
+                                    <p class="trace-integrity-copy">Operational record matches the shared ledger.</p>
+                                @endif
+                                @if (! empty($integrity['note']))
+                                    <p class="trace-integrity-copy">{{ $integrity['note'] }}</p>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
                     <dl class="hospital-detail-grid">
                         @if ($unit->blockchain_register_tx)
                             <div class="hospital-detail-item">

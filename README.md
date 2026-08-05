@@ -1,8 +1,11 @@
 # Tarrlok — Blockchain-Based Blood Bank Management System
 
-**Tarrlok** is a final-year project for **Ghana hospitals**: a blood bank management platform for HeFRA-licensed facilities. Hospitals register on the network, are verified by a central platform administrator, lab staff register and screen blood units, and partner hospitals exchange blood through requests. Critical lifecycle events are also anchored on a local Ethereum smart contract for **immutable audit traceability**.
+**Tarrlok** is a final-year project for **Ghana hospitals**: a blood bank management platform for HeFRA-licensed facilities. Hospitals register on the network, are verified by a central platform administrator, lab staff register and screen blood units, and partner hospitals exchange blood through requests. Critical lifecycle events are also anchored on a local Ethereum smart contract for **immutable audit traceability**. Admin, hospital, and lab portals all read the **same shared ledger**, compare MySQL to on-chain `getUnit()` state, and list **blocked write attempts**.
 
-**Authors:** Ofei-Palm Valentino Papa Ayitey & Asiedu Enoch Ofori Kwasi (BSc. Computer Engineering, K.N.U.S.T.)
+**Authors:** Ofei-Palm Valentino Papa Ayitey (1825922) & Asiedu Enoch Ofori Kwasi (1818522)  
+**Programme:** BSc. Computer Engineering, KNUST  
+**Supervisor:** Ing. Dr Bright Yeboah-Akowuah  
+**Report:** [Final_Year_Project_Report_Blockchain_based_blood_bank_management.docx](Final_Year_Project_Report_Blockchain_based_blood_bank_management.docx)
 
 ---
 
@@ -12,9 +15,10 @@
 |-------|------|
 | **Laravel + MySQL** | Day-to-day operations — users, inventory, screening, partner requests, expiry |
 | **Solidity + Hardhat** | Tamper-evident audit log — registration, screening, partner issue |
-| **Trace / Track** | Unit lifecycle in the database + on-chain transaction hashes |
+| **Shared ledger** | Same on-chain events + integrity alerts + blocked attempts on every portal |
+| **Trace / Track** | Staff timeline and public `/track` by unit code (consent required) |
 
-MySQL is the **operational database**. The blockchain is an **audit trail** — events cannot be altered once mined.
+MySQL is the **operational database**. The blockchain is an **audit trail** — events cannot be altered once mined. Stakeholders are consortium **readers** of one local chain, not separate hospital nodes.
 
 ---
 
@@ -35,20 +39,20 @@ MySQL is the **operational database**. The blockchain is an **audit trail** — 
 ## Architecture
 
 ```
-Browser (Blade UI)
+Browser (Blade UI — landing, portals, /track, shared ledger)
        │
        ▼
-Laravel (controllers + models)
+Laravel (controllers + services)
        │
        ├──────────────────┐
        ▼                  ▼
-   MySQL            BlockchainService
+   MySQL            BlockchainService / LedgerService
  (operations)              │
                            ▼
-                    anchor-event.js
+              anchor-event.js  |  read-ledger.js
                            │
                            ▼
-              BloodBank.sol (local Ethereum)
+              BloodBank.sol (local Ethereum :8545)
 ```
 
 **On-chain events** (via `BloodBank.sol`):
@@ -59,7 +63,7 @@ Laravel (controllers + models)
 | Screening cleared/failed | `recordScreening()` | `UnitScreened` |
 | Partner issue | `recordIssue()` | `UnitIssued` |
 
-Transaction hashes are saved on `blood_units` and shown on **Trace Unit**, **public `/track`**, and **Admin → Blockchain**.
+Transaction hashes are saved on `blood_units` and shown on **Trace Unit**, **public `/track`**, and the **shared ledger** (`/admin/blockchain`, `/hospital/blockchain`, `/lab/blockchain`). Those portals also compare MySQL to on-chain `getUnit()` state and list blocked write attempts in `blockchain_tamper_attempts`.
 
 ---
 
@@ -67,12 +71,17 @@ Transaction hashes are saved on `blood_units` and shown on **Trace Unit**, **pub
 
 ```
 bbbms-project/
+├── Final_Year_Project_Report_Blockchain_based_blood_bank_management.docx
+├── scripts/
+│   ├── build_fyp_report.py        # Regenerates the Word report
+│   └── report_figures/            # Architecture diagrams used in the report
 ├── blockchain/                    # Hardhat + Solidity
 │   ├── contracts/BloodBank.sol
 │   ├── scripts/deploy.js
 │   ├── scripts/anchor-event.js
 │   ├── scripts/chain-status.js    # Admin chain health probe
-│   ├── deployments/local.json       # Created after deploy
+│   ├── scripts/read-ledger.js     # Shared ledger reader
+│   ├── deployments/local.json     # Created after deploy
 │   └── README.md
 ├── deploy/
 │   └── cloudflared-config.example.yml
@@ -85,20 +94,22 @@ bbbms-project/
 │   └── README.md                  # Apache vhost (tarrlok.localhost)
 ├── tarrlok/                       # Laravel application
 │   ├── app/
-│   │   ├── Http/Controllers/      # Admin, Hospital, Lab, DonationTrack
-│   │   ├── Models/                # User, Hospital, Donor, BloodUnit, BloodRequest
-│   │   └── Services/              # BlockchainService, BlockchainStatusService
+│   │   ├── Http/Controllers/      # Admin, Hospital, Lab, DonationTrack, ledger
+│   │   ├── Models/                # User, Hospital, Donor, BloodUnit, BloodRequest, BlockchainTamperAttempt
+│   │   └── Services/              # Blockchain, Status, Integrity, Ledger
 │   ├── config/tarrlok.php         # Regions, blood groups, shelf life
 │   ├── config/blockchain.php
 │   ├── database/seeders/          # AdminSeeder, DemoSeeder
-│   ├── public/assets/css/
+│   ├── public/assets/css/         # Landing, portals, ledger
+│   ├── tests/Feature/             # Auth, navigation, shared-ledger tests
 │   └── resources/views/
+│       ├── landing.blade.php      # Public home
 │       ├── admin/                 # Platform admin + blockchain dashboard
 │       ├── auth/                  # Login, hospital register, password reset
 │       ├── hospital/              # Hospital portal
 │       ├── lab/                   # Lab portal
 │       ├── track/                 # Public donor tracking by unit ID
-│       └── shared/trace/          # Staff unit trace page
+│       └── shared/                # Trace + shared blockchain ledger
 └── README.md
 ```
 
@@ -260,8 +271,9 @@ Sync after changes: `php artisan db:seed --class=AdminSeeder`
 
 | URL | Purpose |
 |-----|---------|
+| `/` | Public landing — live stock bars, track / login / register |
 | `/login` | Sign in (hospital, lab, admin) |
-| `/track` | **Public** — track one donation by unit ID (no login) |
+| `/track` | **Public** — track one donation by unit ID (no login; consent required) |
 | `/track/{unitCode}` | Direct link to a unit’s donor-safe status page |
 | `/register` | 3-step hospital registration wizard |
 | `/register/pending` | Post-submission confirmation |
@@ -273,7 +285,7 @@ Sync after changes: `php artisan db:seed --class=AdminSeeder`
 | URL | Purpose |
 |-----|---------|
 | `/admin` | Overview & pending registrations |
-| `/admin/blockchain` | **Chain health**, contract info, anchor stats, recent tx hashes |
+| `/admin/blockchain` | **Chain health**, shared ledger, integrity alerts, blocked attempts |
 | `/admin/registrations` | List / filter hospital registrations |
 | `/admin/registrations/{hospital}` | Approve or reject a facility |
 
@@ -287,6 +299,7 @@ Sync after changes: `php artisan db:seed --class=AdminSeeder`
 | `/hospital/requests/create` | Request blood from a partner |
 | `/hospital/partners` | Browse approved partner hospitals |
 | `/hospital/trace` | Trace a unit by ID |
+| `/hospital/blockchain` | **Network ledger** — same events / integrity / blocked attempts |
 | `/hospital/facility` | Facility profile |
 | `/hospital/lab-staff` | Manage lab staff accounts |
 
@@ -299,6 +312,7 @@ Sync after changes: `php artisan db:seed --class=AdminSeeder`
 | `/lab/units/create` | Register unit + link donor by phone |
 | `/lab/units/{unit}/screening` | Lab screening report |
 | `/lab/trace` | Trace a unit by ID |
+| `/lab/blockchain` | **Network ledger** — same events / integrity / blocked attempts |
 
 ---
 
@@ -306,10 +320,10 @@ Sync after changes: `php artisan db:seed --class=AdminSeeder`
 
 | Role | Access |
 |------|--------|
-| **admin** | Approve/reject hospitals; **blockchain monitoring** |
-| **hospital** | Inventory, partner requests, lab staff, trace |
-| **lab** | Register units (with donor phone), screening, trace |
-| **Public donor** | No login — `/track` with unit ID only (one unit per lookup) |
+| **admin** | Approve/reject hospitals; chain health + shared ledger |
+| **hospital** | Inventory, partner requests, lab staff, trace, network ledger |
+| **lab** | Register units (with donor phone), screening, trace, network ledger |
+| **Public donor** | No login — `/track` with unit ID only (one unit per lookup, if consent) |
 
 Login redirects: **admin** → `/admin`, **hospital** → `/hospital`, **lab** → `/lab`.
 
@@ -349,16 +363,20 @@ Requires blockchain terminals + web server running.
 4. **Ridge admin** — **Blood Requests → Incoming** → Approve → **Issue unit**
 5. **Korle Bu admin** — **Blood Inventory** — units received
 6. **Public** — `/track` → `UNIT-002-00001` — timeline + blockchain hashes
-7. **Either hospital** — **Trace Unit** — staff view of same unit
+7. **Either hospital or lab** — **Trace Unit** — staff view of same unit
+8. **Admin, hospital, and lab** — **Network ledger** — same events on every portal
+9. **Tamper demo** — second screening is blocked on-chain and appears under **Blocked attempts**; editing a unit blood group in MySQL after anchoring shows a **Tampered** integrity alert while the chain keeps the original group
 
 ### Verify blockchain is working
 
 | Check | Expected |
 |-------|----------|
 | Admin → Blockchain | Status **healthy**, block number, contract address |
+| Hospital / lab → Network ledger | Same event log + integrity + blocked attempts |
 | Trace / Track page | “Blockchain verification” with `0x…` hashes |
 | Hardhat node terminal | New mined transactions on register/screen/issue |
 | `blood_units` table | `blockchain_register_tx`, `blockchain_screening_tx`, `blockchain_issue_tx` populated |
+| `blockchain_tamper_attempts` | Failed / reverted writes attributed to the signed-in user |
 
 ---
 
@@ -382,30 +400,38 @@ Example tunnel config: **[deploy/cloudflared-tesnet.xyz.example.yml](deploy/clou
 | `blood_units` | Units + donor + expiry + screening + blockchain tx hashes |
 | `blood_requests` | Partner exchange requests |
 | `blood_request_unit` | Which units were issued for a request |
+| `blockchain_tamper_attempts` | Blocked / failed chain writes (actor, action, reason) |
 
 ---
 
 ## Features implemented
 
+- [x] Public landing page — live stock, honest CTAs (track / login / register)
 - [x] Tarrlok-branded login, registration, forgot/reset password, profile
 - [x] 3-step hospital registration (Ghana regions, HeFRA license)
 - [x] Platform admin — approve / reject registrations
-- [x] **Admin blockchain dashboard** — chain health, anchor stats, recent tx log
+- [x] **Shared blockchain ledger** on admin, hospital, and lab portals
+- [x] Integrity compare (MySQL vs `getUnit()`) and **blocked-attempt** log
+- [x] Admin blockchain dashboard — chain health, anchor stats, recent tx log
 - [x] Hospital portal — inventory, requests, partners, lab staff, facility, trace
 - [x] Lab portal — register units (donor phone lookup), screening, inventory
 - [x] Lab screening — quarantine → cleared/failed; only cleared units issuable
 - [x] Partner exchange + incoming/outgoing blood requests
 - [x] Approve, reject (with reason), issue — FIFO, units transfer to requester
 - [x] Unit trace — lifecycle timeline + blockchain tx hashes
-- [x] **Public donor tracking** — `/track` by unit ID (one unit, no login)
+- [x] **Public donor tracking** — `/track` by unit ID (one unit, no login, consent)
 - [x] Blood expiry — shelf-life, dashboard alerts, `blood:mark-expired` command
 - [x] Blockchain audit log (`BloodBank.sol` + `BlockchainService`)
 - [x] Demo seeder — Korle Bu + Ridge with sample inventory
+- [x] Feature tests — landing, auth, navigation, shared ledger, tamper persistence
+- [x] FYP report (IEEE-style references) — see Word file at repo root
 
 ### Optional / not implemented
 
 - [ ] Production email delivery (set `MAIL_MAILER=smtp` and run with `QUEUE_CONNECTION=sync`)
 - [ ] Public testnet/mainnet deployment (local Hardhat only)
+- [ ] Per-hospital wallets / multi-node consensus
+- [ ] Clinical cross-match, cold-chain IoT, or NBS/BSIS export
 
 ---
 
@@ -414,8 +440,8 @@ Example tunnel config: **[deploy/cloudflared-tesnet.xyz.example.yml](deploy/clou
 | File | Contents |
 |------|----------|
 | `tarrlok/config/tarrlok.php` | Blood groups, Ghana regions, shelf life (35d), expiry warning (7d) |
-| `tarrlok/config/blockchain.php` | RPC URL, private key, anchor + status scripts |
-| `tarrlok/public/assets/css/` | `login.css`, `register.css`, `admin.css`, `hospital.css` |
+| `tarrlok/config/blockchain.php` | RPC URL, private key, anchor + status + ledger scripts |
+| `tarrlok/public/assets/css/` | `landing.css`, `login.css`, `register.css`, `admin.css`, `hospital.css`, `ledger.css` |
 
 ---
 
@@ -435,7 +461,26 @@ cd blockchain
 npm run node                        # Start chain (keep running)
 npm run deploy                      # Deploy contract (after each node restart)
 node scripts/chain-status.js        # Quick chain health check (CLI)
+node scripts/read-ledger.js "{\"action\":\"ledger\",\"unitCodes\":[]}"
 ```
+
+---
+
+## Final-year report
+
+The completed project report is:
+
+**[Final_Year_Project_Report_Blockchain_based_blood_bank_management.docx](Final_Year_Project_Report_Blockchain_based_blood_bank_management.docx)**
+
+It covers Chapters 1–6 (introduction through conclusion), verified IEEE-style references, architecture figures, demo accounts, and an appendix aligned with this repository (Laravel + MySQL + Hardhat, not React/Flask/Ganache).
+
+To regenerate after code or citation changes:
+
+```bash
+python scripts/build_fyp_report.py
+```
+
+Requires Python 3 with `python-docx` and `matplotlib`.
 
 ---
 
@@ -447,7 +492,10 @@ node scripts/chain-status.js        # Quick chain health check (CLI)
 | No partner hospitals | Register a second hospital and approve as admin, or `migrate:fresh --seed` |
 | Issue fails — not enough stock | Lab must register + clear units first; Ridge seeder has 5 units |
 | No blockchain tx hashes | Start `npm run node`, run `npm run deploy`, set `BLOCKCHAIN_ENABLED=true` |
+| Admin / hospital / lab ledger empty | Same as above; then open `/admin/blockchain`, `/hospital/blockchain`, or `/lab/blockchain` |
 | Admin blockchain shows offline | Hardhat node not running on the server; chain is local-only |
+| Integrity says tampered after node restart | Local chain was wiped — redeploy, or use that mismatch as the viva demo |
+| `/track` 404 or empty | Unit must exist **and** donor tracking consent must be on; demo: `UNIT-002-00001` |
 | `/track` not found | Run from `tarrlok/` web root; `php artisan route:list --name=track` |
 | 404 on port 8000 | Kill duplicate `php artisan serve` processes |
 | Apache issues | See `apache/README.md` or use `php artisan serve` |
@@ -457,9 +505,10 @@ node scripts/chain-status.js        # Quick chain health check (CLI)
 
 ## Development notes
 
-- Tarrlok UI uses **Blade + plain CSS** — not Tailwind on portal pages.
+- Tarrlok UI uses **Blade + plain CSS** — not Tailwind on portal pages. There is no React/Flask/Ganache stack.
 - Blockchain uses the **first Hardhat dev account** private key — local demo only, never production.
-- Restarting Hardhat **wipes chain state** — run `npm run deploy` again; old tx hashes in MySQL may reference a previous chain (acceptable for demo).
+- Restarting Hardhat **wipes chain state** — run `npm run deploy` again; old tx hashes in MySQL may reference a previous chain (acceptable for demo / integrity mismatch).
+- Shared ledger = one permissioned chain, many authenticated portals. Not per-hospital Geth nodes.
 
 ---
 
