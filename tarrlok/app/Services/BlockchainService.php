@@ -55,20 +55,35 @@ class BlockchainService
         return $response['txHash'] ?? null;
     }
 
-    public function registerUnit(string $unitCode, int $hospitalId, string $bloodGroup): ?string
-    {
+    public function registerUnit(
+        string $unitCode,
+        int $hospitalId,
+        string $bloodGroup,
+        int $expiresAt,
+        int $actorId,
+        string $actorName
+    ): ?string {
         return $this->anchor('registerUnit', [
             'unitCode' => $unitCode,
             'hospitalId' => $hospitalId,
             'bloodGroup' => $bloodGroup,
+            'expiresAt' => $expiresAt,
+            'actorId' => $actorId,
+            'actorName' => $actorName,
         ]);
     }
 
-    public function recordScreening(string $unitCode, string $status): ?string
-    {
+    public function recordScreening(
+        string $unitCode,
+        string $status,
+        int $actorId,
+        string $actorName
+    ): ?string {
         return $this->anchor('recordScreening', [
             'unitCode' => $unitCode,
             'status' => $status,
+            'actorId' => $actorId,
+            'actorName' => $actorName,
         ]);
     }
 
@@ -76,13 +91,17 @@ class BlockchainService
         string $unitCode,
         int $fromHospitalId,
         int $toHospitalId,
-        string $requestCode
+        string $requestCode,
+        int $actorId,
+        string $actorName
     ): ?string {
         return $this->anchor('recordIssue', [
             'unitCode' => $unitCode,
             'fromHospitalId' => $fromHospitalId,
             'toHospitalId' => $toHospitalId,
             'requestCode' => $requestCode,
+            'actorId' => $actorId,
+            'actorName' => $actorName,
         ]);
     }
 }

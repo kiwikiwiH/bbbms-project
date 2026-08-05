@@ -184,9 +184,19 @@ class BloodUnit extends Model
 
     public static function generateUnitCode(int $hospitalId): string
     {
-        $sequence = static::where('hospital_id', $hospitalId)->count() + 1;
+        $prefix = 'UNIT-'.str_pad((string) $hospitalId, 3, '0', STR_PAD_LEFT).'-';
 
-        return 'UNIT-'.str_pad((string) $hospitalId, 3, '0', STR_PAD_LEFT).'-'.str_pad((string) $sequence, 5, '0', STR_PAD_LEFT);
+        $latest = static::query()
+            ->where('unit_code', 'like', $prefix.'%')
+            ->orderByDesc('unit_code')
+            ->value('unit_code');
+
+        $sequence = 1;
+        if (is_string($latest) && preg_match('/-(\d{5})$/', $latest, $matches)) {
+            $sequence = (int) $matches[1] + 1;
+        }
+
+        return $prefix.str_pad((string) $sequence, 5, '0', STR_PAD_LEFT);
     }
 
     public function stockStatusLabel(): string

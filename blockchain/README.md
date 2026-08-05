@@ -8,11 +8,11 @@ The chain runs on **your server only** (`127.0.0.1:8545`). It is **not** exposed
 
 | Laravel action | Contract method | On-chain event | DB column |
 |----------------|-----------------|----------------|-----------|
-| Lab registers unit | `registerUnit()` | `UnitRegistered` | `blockchain_register_tx` |
-| Screening cleared/failed | `recordScreening()` | `UnitScreened` | `blockchain_screening_tx` |
-| Partner issue | `recordIssue()` | `UnitIssued` | `blockchain_issue_tx` |
+| Lab registers unit | `registerUnit()` | `UnitRegistered` (+ actor, expiresAt) | `blockchain_register_tx` |
+| Screening cleared/failed | `recordScreening()` | `UnitScreened` (+ actor) | `blockchain_screening_tx` |
+| Partner issue | `recordIssue()` | `UnitIssued` (+ actor; rejects expired / uncleared) | `blockchain_issue_tx` |
 
-The contract does **not** replace MySQL — it stores an **immutable event log**.
+The contract does **not** replace MySQL — it stores an **immutable event log** and enforces key lifecycle rules (no double-register, screening once, no transfer of expired/uncleared units).
 
 ## Prerequisites
 
@@ -50,7 +50,7 @@ In `tarrlok/.env`:
 ```env
 BLOCKCHAIN_ENABLED=true
 BLOCKCHAIN_RPC_URL=http://127.0.0.1:8545
-BLOCKCHAIN_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d3255bf239959da31d71ebff6b2c5c3f809b40
+BLOCKCHAIN_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 ```
 
 Use the **first Hardhat account** private key (printed when `hardhat node` starts). Demo only — never use in production.

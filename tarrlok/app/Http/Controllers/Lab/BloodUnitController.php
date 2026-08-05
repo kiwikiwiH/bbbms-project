@@ -102,6 +102,16 @@ class BloodUnitController extends Controller
         }
 
         $collectedAt = $validated['collected_at'];
+        $expiresAt = BloodUnit::calculateExpiresAt($collectedAt);
+        $shelfLifeDays = (int) config('tarrlok.blood_shelf_life_days', 35);
+
+        if ($expiresAt->isPast()) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'collected_at' => 'This collection date already exceeds the '.$shelfLifeDays.'-day shelf life. Enter a more recent collection date.',
+                ]);
+        }
 
         $unit = $hospital->bloodUnits()->create([
             'donor_id' => $donor->id,
@@ -111,7 +121,7 @@ class BloodUnitController extends Controller
             'screening_status' => 'pending',
             'recorded_by' => $user->id,
             'collected_at' => $collectedAt,
-            'expires_at' => BloodUnit::calculateExpiresAt($collectedAt),
+            'expires_at' => $expiresAt,
         ]);
 
         $donor->update([
@@ -122,7 +132,10 @@ class BloodUnitController extends Controller
         $txHash = app(BlockchainService::class)->registerUnit(
             $unit->unit_code,
             $hospital->id,
-            $unit->blood_group
+            $unit->blood_group,
+            $unit->expires_at->getTimestamp(),
+            $user->id,
+            $user->name
         );
 
         if ($txHash) {

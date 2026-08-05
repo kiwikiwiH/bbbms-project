@@ -58,10 +58,10 @@
                 <h3 class="screening-report-heading">Serology results</h3>
                 <ul class="screening-test-list">
                     @foreach ($screeningTests as $field => $label)
-                        <li @class(['screening-test-item', 'passed' => $unit->{$field}])>
+                        <li @class(['screening-test-item', 'reactive' => ! $unit->{$field}, 'passed' => $unit->{$field}])>
                             <span class="material-symbols-outlined">{{ $unit->{$field} ? 'check_circle' : 'cancel' }}</span>
                             <span>{{ $label }}</span>
-                            <strong>{{ $unit->{$field} ? 'Non-reactive' : 'Reactive / not cleared' }}</strong>
+                            <strong>{{ $unit->{$field} ? 'Non-reactive' : 'Reactive' }}</strong>
                         </li>
                     @endforeach
                 </ul>
@@ -89,28 +89,29 @@
                 <a href="{{ route('lab.units.index') }}" class="hospital-btn hospital-btn-primary">Back to inventory</a>
             </div>
         @else
-            <form class="hospital-form" method="POST" action="{{ route('lab.units.screening.update', $unit) }}">
+            <form class="hospital-form" id="screening-form" method="POST" action="{{ route('lab.units.screening.update', $unit) }}">
                 @csrf
 
                 <p class="hospital-field-hint" style="margin-bottom:16px;">
-                    Mark each test <strong>non-reactive</strong> before clearing the unit for hospital inventory and partner requests.
+                    Tick a test only when it is <strong>non-reactive</strong>. Any <strong>reactive</strong> result stays highlighted in red — then use <strong>Mark failed</strong>.
                 </p>
 
                 <fieldset class="hospital-field screening-tests-field">
                     <legend class="hospital-label">Screening tests</legend>
-                    <div class="screening-test-checks">
+                    <div class="screening-test-checks" id="screening-test-checks">
                         @foreach ($screeningTests as $field => $label)
                             <label class="screening-test-check">
                                 <input
                                     type="checkbox"
                                     name="{{ $field }}"
                                     value="1"
+                                    class="screening-test-input"
                                     @checked(old($field, $unit->{$field}))
                                 >
                                 <span class="screening-test-check-box">
                                     <span class="material-symbols-outlined">science</span>
                                     <span>{{ $label }}</span>
-                                    <small>Non-reactive</small>
+                                    <small class="screening-test-state">Reactive</small>
                                 </span>
                             </label>
                         @endforeach
@@ -146,11 +147,11 @@
 
                 <div class="hospital-form-actions screening-form-actions">
                     <a href="{{ route('lab.units.index') }}" class="hospital-btn hospital-btn-outline">Save for later</a>
-                    <button type="submit" name="action" value="failed" class="hospital-btn hospital-btn-outline screening-fail-btn">
+                    <button type="submit" name="action" value="failed" id="screening-fail-btn" class="hospital-btn screening-fail-btn">
                         <span class="material-symbols-outlined">block</span>
                         Mark failed
                     </button>
-                    <button type="submit" name="action" value="cleared" class="hospital-btn hospital-btn-primary">
+                    <button type="submit" name="action" value="cleared" id="screening-clear-btn" class="hospital-btn hospital-btn-primary">
                         <span class="material-symbols-outlined">verified</span>
                         Clear for inventory
                     </button>
@@ -169,6 +170,46 @@
         if (!input) return;
         input.value = new Date().toISOString().slice(0, 10);
     });
+
+    (function () {
+        const checks = Array.from(document.querySelectorAll('.screening-test-input'));
+        const clearBtn = document.getElementById('screening-clear-btn');
+        const failBtn = document.getElementById('screening-fail-btn');
+        if (!checks.length || !clearBtn || !failBtn) return;
+
+        const syncTestLabels = () => {
+            checks.forEach((input) => {
+                const state = input.closest('label')?.querySelector('.screening-test-state');
+                if (state) {
+                    state.textContent = input.checked ? 'Non-reactive' : 'Reactive';
+                }
+            });
+        };
+
+        const syncActions = () => {
+            const allClear = checks.every((input) => input.checked);
+            const anyReactive = checks.some((input) => !input.checked);
+
+            clearBtn.disabled = !allClear;
+            failBtn.disabled = allClear;
+
+            clearBtn.classList.toggle('hospital-btn-primary', allClear);
+            clearBtn.classList.toggle('screening-btn-muted', !allClear);
+
+            failBtn.classList.toggle('screening-fail-btn-active', anyReactive);
+            failBtn.classList.toggle('screening-btn-muted', allClear);
+        };
+
+        checks.forEach((input) => {
+            input.addEventListener('change', () => {
+                syncTestLabels();
+                syncActions();
+            });
+        });
+
+        syncTestLabels();
+        syncActions();
+    })();
 </script>
 @endpush
 @endunless

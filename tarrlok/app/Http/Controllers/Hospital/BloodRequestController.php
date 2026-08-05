@@ -186,52 +186,95 @@ class BloodRequestController extends Controller
             ]);
         }
 
-        DB::transaction(function () use ($bloodRequest, $hospital) {
-            $units = BloodUnit::query()
-                ->where('hospital_id', $hospital->id)
-                ->where('blood_group', $bloodRequest->blood_group)
-                ->available()
-                ->orderBy('collected_at')
-                ->limit($bloodRequest->quantity)
-                ->lockForUpdate()
-                ->get();
+        try {
+            $anchorFailures = DB::transaction(function () use ($bloodRequest, $hospital) {
+                $units = BloodUnit::query()
+                    ->where('hospital_id', $hospital->id)
+                    ->where('blood_group', $bloodRequest->blood_group)
+                    ->available()
+                    ->orderBy('collected_at')
+                    ->limit($bloodRequest->quantity)
+                    ->lockForUpdate()
+                    ->get();
 
-            if ($units->count() < $bloodRequest->quantity) {
-                throw new \RuntimeException('insufficient_stock');
-            }
-
-            $blockchain = app(BlockchainService::class);
-
-            foreach ($units as $unit) {
-                $unit->update([
-                    'hospital_id' => $bloodRequest->requesting_hospital_id,
-                    'status' => 'available',
-                ]);
-
-                $txHash = $blockchain->recordIssue(
-                    $unit->unit_code,
-                    $hospital->id,
-                    $bloodRequest->requesting_hospital_id,
-                    $bloodRequest->request_code
-                );
-
-                if ($txHash) {
-                    $unit->update(['blockchain_issue_tx' => $txHash]);
+                if ($units->count() < $bloodRequest->quantity) {
+                    throw new \RuntimeException('insufficient_stock');
                 }
 
-                app(DonorNotificationService::class)->notifyStatusChange($unit->fresh(), 'issued');
+                $blockchain = app(BlockchainService::class);
+                $actor = auth()->user();
+                $blockchainEnabled = $blockchain->isEnabled();
+                $anchorFailures = [];
+
+                foreach ($units as $unit) {
+                    $txHash = $blockchain->recordIssue(
+                        $unit->unit_code,
+                        $hospital->id,
+                        $bloodRequest->requesting_hospital_id,
+                        $bloodRequest->request_code,
+                        $actor->id,
+                        $actor->name
+                    );
+
+                    if ($blockchainEnabled && ! $txHash) {
+                        $anchorFailures[] = $unit->unit_code;
+                    }
+
+                    $unit->update([
+                        'hospital_id' => $bloodRequest->requesting_hospital_id,
+                        'status' => 'available',
+                        ...($txHash ? ['blockchain_issue_tx' => $txHash] : []),
+                    ]);
+
+                    app(DonorNotificationService::class)->notifyStatusChange($unit->fresh(), 'issued');
+                }
+
+                $bloodRequest->bloodUnits()->syncWithoutDetaching($units->pluck('id'));
+                $bloodRequest->update([
+                    'status' => 'fulfilled',
+                    'fulfilled_at' => now(),
+                ]);
+
+                return $anchorFailures;
+            });
+        } catch (\RuntimeException $e) {
+            if ($e->getMessage() === 'insufficient_stock') {
+                return back()->withErrors([
+                    'stock' => 'Not enough cleared '.$bloodRequest->blood_group.' units in inventory. Lab staff must register units and complete screening first.',
+                ]);
             }
 
-            $bloodRequest->bloodUnits()->syncWithoutDetaching($units->pluck('id'));
-            $bloodRequest->update([
-                'status' => 'fulfilled',
-                'fulfilled_at' => now(),
-            ]);
-        });
+            throw $e;
+        }
 
         $bloodRequest->loadMissing('requestingHospital');
 
-        return back()->with('status', $bloodRequest->request_code.' fulfilled — '.$bloodRequest->quantity.' unit(s) transferred to '.$bloodRequest->requestingHospital->name.'.');
+        $message = $bloodRequest->request_code.' fulfilled — '.$bloodRequest->quantity.' unit(s) transferred to '.$bloodRequest->requestingHospital->name.'.';
+
+        if (! empty($anchorFailures)) {
+            $message .= ' Warning: blockchain anchor failed for '.implode(', ', $anchorFailures).'. Inventory transfer still completed.';
+        }
+
+        return back()->with('status', $message);
+    }
+
+    public function cancel(BloodRequest $bloodRequest): RedirectResponse
+    {
+        abort_unless(
+            $bloodRequest->requesting_hospital_id === auth()->user()->hospital_id,
+            403
+        );
+
+        if ($bloodRequest->status !== 'pending') {
+            return back()->with('status', 'Only pending outgoing requests can be cancelled.');
+        }
+
+        $bloodRequest->update([
+            'status' => 'rejected',
+            'rejection_reason' => 'Cancelled by requesting hospital.',
+        ]);
+
+        return back()->with('status', $bloodRequest->request_code.' cancelled.');
     }
 
     private function ensureIncoming(BloodRequest $bloodRequest): void

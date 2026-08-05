@@ -219,7 +219,7 @@ npm run deploy
 ```env
 BLOCKCHAIN_ENABLED=true
 BLOCKCHAIN_RPC_URL=http://127.0.0.1:8545
-BLOCKCHAIN_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d3255bf239959da31d71ebff6b2c5c3f809b40
+BLOCKCHAIN_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 ```
 
 Then: `php artisan config:clear`
@@ -326,7 +326,7 @@ Partner request          →  blood_requests: pending
 Partner approve + issue  →  FIFO; units transfer to requesting hospital
 Trace unit (staff)       →  full timeline + blockchain tx hashes
 Donor track (public)     →  /track + unit ID — donor-safe view, no patient data
-Daily expiry job         →  php artisan blood:mark-expired (also scheduled daily)
+Daily expiry job         →  php artisan blood:mark-expired (also scheduled hourly)
 ```
 
 **Unit statuses:** `quarantine` → `available` (after screening) → transferred to partner as `available`, or `discarded`.

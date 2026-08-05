@@ -194,7 +194,7 @@
             </div>
             <div class="bc-flow-copy">
                 <strong>1. Register unit</strong>
-                <p>Lab records a donation</p>
+                <p>Lab staff + expiry stored on-chain</p>
                 <code>UnitRegistered</code>
             </div>
         </div>
@@ -207,7 +207,7 @@
             </div>
             <div class="bc-flow-copy">
                 <strong>2. Screening</strong>
-                <p>Cleared or failed tests</p>
+                <p>Actor recorded; one-time status only</p>
                 <code>UnitScreened</code>
             </div>
         </div>
@@ -220,7 +220,7 @@
             </div>
             <div class="bc-flow-copy">
                 <strong>3. Partner issue</strong>
-                <p>Transfer to another hospital</p>
+                <p>Blocks expired / uncleared units</p>
                 <code>UnitIssued</code>
             </div>
         </div>

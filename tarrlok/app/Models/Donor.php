@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Donor extends Model
 {
     protected $fillable = [
-        'user_id',
         'donor_code',
         'name',
         'phone',
@@ -27,11 +26,6 @@ class Donor extends Model
             'last_donation_at' => 'datetime',
             'tracking_consent' => 'boolean',
         ];
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
     }
 
     public function registeredAtHospital(): BelongsTo

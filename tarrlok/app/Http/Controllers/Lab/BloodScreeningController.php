@@ -36,6 +36,12 @@ class BloodScreeningController extends Controller
                 ->with('status', 'Screening has already been recorded for this unit.');
         }
 
+        if ($bloodUnit->isExpired()) {
+            return redirect()
+                ->route('lab.units.index')
+                ->withErrors(['screening' => 'This unit has already expired and cannot be cleared for inventory. Discard it from stock instead.']);
+        }
+
         $validated = $request->validate([
             'action' => ['required', 'in:cleared,failed'],
             'screened_at' => ['required', 'date', 'before_or_equal:today'],
@@ -70,7 +76,12 @@ class BloodScreeningController extends Controller
                 'screening_notes' => $validated['screening_notes'] ?? null,
             ]);
 
-            $txHash = app(BlockchainService::class)->recordScreening($bloodUnit->unit_code, 'cleared');
+            $txHash = app(BlockchainService::class)->recordScreening(
+                $bloodUnit->unit_code,
+                'cleared',
+                $user->id,
+                $user->name
+            );
             if ($txHash) {
                 $bloodUnit->update(['blockchain_screening_tx' => $txHash]);
             }
@@ -91,7 +102,12 @@ class BloodScreeningController extends Controller
             'screening_notes' => $validated['screening_notes'] ?? 'Unit failed screening and was discarded.',
         ]);
 
-        $txHash = app(BlockchainService::class)->recordScreening($bloodUnit->unit_code, 'failed');
+        $txHash = app(BlockchainService::class)->recordScreening(
+            $bloodUnit->unit_code,
+            'failed',
+            $user->id,
+            $user->name
+        );
         if ($txHash) {
             $bloodUnit->update(['blockchain_screening_tx' => $txHash]);
         }

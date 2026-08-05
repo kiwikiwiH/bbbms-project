@@ -30,17 +30,31 @@ async function main() {
 
   switch (payload.action) {
     case "registerUnit":
-      tx = await contract.registerUnit(payload.unitCode, payload.hospitalId, payload.bloodGroup);
+      tx = await contract.registerUnit(
+        payload.unitCode,
+        payload.hospitalId,
+        payload.bloodGroup,
+        payload.expiresAt,
+        payload.actorId,
+        payload.actorName
+      );
       break;
     case "recordScreening":
-      tx = await contract.recordScreening(payload.unitCode, payload.status);
+      tx = await contract.recordScreening(
+        payload.unitCode,
+        payload.status,
+        payload.actorId,
+        payload.actorName
+      );
       break;
     case "recordIssue":
       tx = await contract.recordIssue(
         payload.unitCode,
         payload.fromHospitalId,
         payload.toHospitalId,
-        payload.requestCode
+        payload.requestCode,
+        payload.actorId,
+        payload.actorName
       );
       break;
     default:

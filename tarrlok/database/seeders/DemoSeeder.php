@@ -101,7 +101,8 @@ class DemoSeeder extends Seeder
         ]);
 
         $groups = ['O+', 'O+', 'A+', 'B+', 'AB+'];
-        $collectedOffsets = [30, 5, 4, 3, 2];
+        // First unit is older than shelf life so expiry discard can be demonstrated.
+        $collectedOffsets = [40, 5, 4, 3, 2];
 
         foreach ($groups as $index => $group) {
             $collectedAt = now()->subDays($collectedOffsets[$index]);
@@ -124,7 +125,7 @@ class DemoSeeder extends Seeder
                 'screening_syphilis' => true,
             ]);
 
-            $this->seedBlockchainHashes($unit, $ridge);
+            $this->seedBlockchainHashes($unit, $ridge, $ridgeLab);
         }
 
         Artisan::call('blood:mark-expired');
@@ -142,20 +143,34 @@ class DemoSeeder extends Seeder
         $this->command?->info('Donor tracking: /track → UNIT-002-00001 (demo blockchain hashes included).');
     }
 
-    private function seedBlockchainHashes(BloodUnit $unit, Hospital $hospital): void
+    private function seedBlockchainHashes(BloodUnit $unit, Hospital $hospital, User $actor): void
     {
         $blockchain = app(BlockchainService::class);
 
-        if ($blockchain->isEnabled()) {
-            $registerTx = $blockchain->registerUnit($unit->unit_code, $hospital->id, $unit->blood_group);
-            $screenTx = $blockchain->recordScreening($unit->unit_code, 'cleared');
+        if ($blockchain->isEnabled() && $unit->expires_at?->isFuture()) {
+            $registerTx = $blockchain->registerUnit(
+                $unit->unit_code,
+                $hospital->id,
+                $unit->blood_group,
+                $unit->expires_at->getTimestamp(),
+                $actor->id,
+                $actor->name
+            );
+            $screenTx = $blockchain->recordScreening(
+                $unit->unit_code,
+                'cleared',
+                $actor->id,
+                $actor->name
+            );
 
-            $unit->update(array_filter([
-                'blockchain_register_tx' => $registerTx,
-                'blockchain_screening_tx' => $screenTx,
-            ]));
+            if ($registerTx || $screenTx) {
+                $unit->update(array_filter([
+                    'blockchain_register_tx' => $registerTx,
+                    'blockchain_screening_tx' => $screenTx,
+                ]));
 
-            return;
+                return;
+            }
         }
 
         $unit->update([

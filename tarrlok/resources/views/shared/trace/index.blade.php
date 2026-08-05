@@ -153,10 +153,10 @@
                     <h3 class="screening-report-heading">Lab screening report</h3>
                     <ul class="screening-test-list">
                         @foreach ($screeningTests as $field => $label)
-                            <li @class(['screening-test-item', 'passed' => $unit->{$field}])>
+                            <li @class(['screening-test-item', 'reactive' => ! $unit->{$field}, 'passed' => $unit->{$field}])>
                                 <span class="material-symbols-outlined">{{ $unit->{$field} ? 'check_circle' : 'cancel' }}</span>
                                 <span>{{ $label }}</span>
-                                <strong>{{ $unit->{$field} ? 'Non-reactive' : 'Reactive / not cleared' }}</strong>
+                                <strong>{{ $unit->{$field} ? 'Non-reactive' : 'Reactive' }}</strong>
                             </li>
                         @endforeach
                     </ul>

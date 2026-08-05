@@ -22,9 +22,12 @@ class DonationTrackController extends Controller
 
         $code = strtoupper(trim($validated['unit_code']));
 
-        $unit = BloodUnit::query()->where('unit_code', $code)->first();
+        $unit = BloodUnit::query()
+            ->with('donor')
+            ->where('unit_code', $code)
+            ->first();
 
-        if (! $unit) {
+        if (! $unit || ! $unit->donor?->tracking_consent) {
             return back()
                 ->withInput()
                 ->withErrors(['unit_code' => 'No donation found with that unit ID. Check the code on your donation slip.']);
@@ -37,9 +40,12 @@ class DonationTrackController extends Controller
     {
         $bloodUnit->load([
             'hospital',
+            'donor',
             'bloodRequests.requestingHospital',
             'bloodRequests.fulfillingHospital',
         ]);
+
+        abort_unless($bloodUnit->donor?->tracking_consent, 404);
 
         return view('track.show', [
             'unit' => $bloodUnit,

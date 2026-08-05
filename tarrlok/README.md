@@ -42,7 +42,7 @@ In `tarrlok/.env`:
 ```env
 BLOCKCHAIN_ENABLED=true
 BLOCKCHAIN_RPC_URL=http://127.0.0.1:8545
-BLOCKCHAIN_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d3255bf239959da31d71ebff6b2c5c3f809b40
+BLOCKCHAIN_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 ```
 
 ```bash
@@ -68,7 +68,7 @@ No login. One unit per lookup — donors cannot see other people’s donations.
 php artisan migrate:fresh --seed   # Reset DB + demo hospitals
 php artisan db:seed --class=DemoSeeder
 php artisan blood:mark-expired     # Mark past-shelf-life units discarded
-php artisan schedule:run             # Scheduled tasks (incl. daily expiry)
+php artisan schedule:run             # Scheduled tasks (incl. hourly expiry)
 php artisan config:clear
 php artisan route:list --name=track
 php artisan test

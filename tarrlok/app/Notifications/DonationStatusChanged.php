@@ -35,8 +35,8 @@ class DonationStatusChanged extends Notification
         return (new MailMessage)
             ->subject('Your blood donation '.$unit->unit_code.' — Tarrlok')
             ->greeting('Hello '.($unit->donor?->name ?? 'Donor').',')
-            ->line('Your donation **'.$unit->unit_code.'** ('.$unit->blood_group.') '.$label.'.')
-            ->line('Current facility: '.$unit->hospital->name)
+            ->line('Your donation '.$unit->unit_code.' ('.$unit->blood_group.') '.$label.'.')
+            ->line('Current facility: '.($unit->hospital?->name ?? 'Tarrlok network'))
             ->action('View donation', url('/track/'.$unit->unit_code))
             ->line('Thank you for donating through the Tarrlok network.');
     }

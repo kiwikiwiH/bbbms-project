@@ -172,6 +172,11 @@
                                         <span class="hospital-muted">Received {{ $req->fulfilled_at?->format('M j') }}</span>
                                     @elseif ($req->status === 'approved')
                                         <span class="hospital-muted">Awaiting issue</span>
+                                    @elseif ($req->status === 'pending')
+                                        <form method="POST" action="{{ route('hospital.requests.cancel', $req) }}" onsubmit="return confirm('Cancel this blood request?');">
+                                            @csrf
+                                            <button type="submit" class="hospital-btn hospital-btn-outline hospital-btn-sm">Cancel request</button>
+                                        </form>
                                     @else
                                         <span class="hospital-muted">Awaiting partner</span>
                                     @endif
