@@ -12,10 +12,13 @@ Docker (all-in-one): **[docs/DOCKER.md](../docs/DOCKER.md)**
 composer install
 copy .env.example .env
 php artisan key:generate
+php artisan config:clear
 php artisan migrate
 php artisan db:seed
 php artisan serve
 ```
+
+In `.env`, set `APP_URL=http://127.0.0.1:8000` (or your Laragon host). A wrong `APP_URL` makes CSS fail to load.
 
 **URL:** http://127.0.0.1:8000  
 **Apache (this machine):** http://tarrlok.localhost — see [../apache/README.md](../apache/README.md)

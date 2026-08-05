@@ -23,6 +23,8 @@ class ExampleTest extends TestCase
         $response->assertOk();
         $response->assertSee('Every donor is a', false);
         $response->assertSee(route('track.index', absolute: false));
+        $response->assertSee('assets/css/landing.css', false);
+        $response->assertSee('assets/css/fonts.css', false);
     }
 
     public function test_public_track_page_is_available(): void

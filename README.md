@@ -141,7 +141,10 @@ cd tarrlok
 composer install
 copy .env.example .env
 php artisan key:generate
+php artisan config:clear
 ```
+
+Set `APP_URL` in `.env` to **exactly** the URL you open in the browser. If it is wrong, CSS/JS will 404 and the site looks unstyled.
 
 **MySQL** (recommended) — in `.env`:
 
@@ -502,6 +505,10 @@ Requires Python 3 with `python-docx` and `matplotlib`.
 | 404 on port 8000 | Kill duplicate `php artisan serve` processes |
 | Apache issues | See `apache/README.md` or use `php artisan serve` |
 | HTTPS redirect issues behind Cloudflare | Set `APP_URL=https://...`; app trusts proxies automatically |
+| **Pages load but look unstyled** | `APP_URL` does not match the browser URL. Set it, then `php artisan config:clear`. Open DevTools → Network and check `/assets/css/*.css` (should be 200, not 404). |
+| Unstyled on Laragon `*.test` | Either point the vhost document root at `tarrlok/public`, or open the repo folder (root `.htaccess` forwards into `tarrlok/public`). Still set `APP_URL` to that host. |
+| Unstyled via `localhost/.../tarrlok/public` | Do not serve Laravel from a subfolder if you can avoid it. Use `php artisan serve` or a vhost whose root is `tarrlok/public`. |
+| Secure cookie / cannot stay logged in on HTTP | Set `SESSION_SECURE_COOKIE=false` for local HTTP. |
 
 ---
 
