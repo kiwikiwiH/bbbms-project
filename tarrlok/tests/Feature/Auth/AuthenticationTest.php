@@ -48,6 +48,64 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('hospital.dashboard', absolute: false));
     }
 
+    public function test_lab_staff_login_ignores_a_hospital_intended_url(): void
+    {
+        $hospital = Hospital::create([
+            'name' => 'Ridge Hospital',
+            'type' => 'regional',
+            'region' => 'greater_accra',
+            'city' => 'Accra',
+            'license_id' => 'HFRA-TEST-LAB-001',
+            'phone' => '+233244000002',
+            'email' => 'labtest@hospital.gh',
+            'status' => 'approved',
+            'reviewed_at' => now(),
+        ]);
+
+        $labUser = User::factory()->create([
+            'hospital_id' => $hospital->id,
+            'role' => 'lab',
+            'status' => 'active',
+            'job_title' => 'Lab Technologist',
+        ]);
+
+        $this->get('/hospital')->assertRedirect(route('login'));
+
+        $response = $this->post('/login', [
+            'email' => $labUser->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('lab.dashboard', absolute: false));
+    }
+
+    public function test_lab_staff_visiting_hospital_routes_are_sent_to_the_lab_portal(): void
+    {
+        $hospital = Hospital::create([
+            'name' => 'Korle Bu Teaching Hospital',
+            'type' => 'teaching',
+            'region' => 'greater_accra',
+            'city' => 'Accra',
+            'license_id' => 'HFRA-TEST-LAB-002',
+            'phone' => '+233244000003',
+            'email' => 'labtest2@hospital.gh',
+            'status' => 'approved',
+            'reviewed_at' => now(),
+        ]);
+
+        $labUser = User::factory()->create([
+            'hospital_id' => $hospital->id,
+            'role' => 'lab',
+            'status' => 'active',
+            'job_title' => 'Lab Technologist',
+        ]);
+
+        $this->actingAs($labUser)
+            ->get('/hospital')
+            ->assertRedirect(route('lab.dashboard'));
+    }
+
     public function test_users_can_not_authenticate_with_invalid_password(): void
     {
         $user = User::factory()->create();

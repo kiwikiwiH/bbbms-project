@@ -12,6 +12,16 @@ class EnsureLab
     {
         $user = $request->user();
 
+        if ($user?->isActive()) {
+            if ($user->isHospital()) {
+                return redirect()->route('hospital.dashboard');
+            }
+
+            if ($user->isAdmin()) {
+                return redirect()->route('admin.dashboard');
+            }
+        }
+
         if (! $user || ! $user->isLab() || ! $user->isActive()) {
             abort(403, 'Lab staff access required.');
         }
