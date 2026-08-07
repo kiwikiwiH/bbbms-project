@@ -248,11 +248,13 @@ See [`blockchain/README.md`](blockchain/README.md) for details.
 
 | Role | Email | Password |
 |------|--------|----------|
-| Platform admin | `admin@tarrlok.gh` | `TarrlokAdmin2024!` |
-| Korle Bu admin | `kwame.mensah@korlebu.gov.gh` | `KorleBu2024!` |
-| Korle Bu lab | `ama.osei@korlebu.gov.gh` | `KorleBuLab2024!` |
-| Ridge admin (supplier) | `efua.adjei@ridge.gov.gh` | `Ridge2024!` |
-| Ridge lab | `kofi.boateng@ridge.gov.gh` | `RidgeLab2024!` |
+| Role           | Email                       | Password        |
++----------------+-----------------------------+-----------------+
+| Korle Bu admin | kwame.mensah@korlebu.gov.gh | KorleBu2024!    |
+| Korle Bu lab   | ama.osei@korlebu.gov.gh     | KorleBuLab2024! |
+| Ridge admin    | efua.adjei@ridge.gov.gh     | Ridge2024!      |
+| Ridge lab      | kofi.boateng@ridge.gov.gh   | RidgeLab2024!   |
++----------------+-----------------------------+-----------------+
 
 **Donor tracking (no login):** open `/track` and enter `UNIT-002-00001` after seeding demo data.
 
