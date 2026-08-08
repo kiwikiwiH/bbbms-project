@@ -12,6 +12,16 @@ class EnsureHospital
     {
         $user = $request->user();
 
+        if ($user?->isActive()) {
+            if ($user->isLab()) {
+                return redirect()->route('lab.dashboard');
+            }
+
+            if ($user->isAdmin()) {
+                return redirect()->route('admin.dashboard');
+            }
+        }
+
         if (! $user || ! $user->isHospital() || ! $user->isActive()) {
             abort(403, 'Hospital administrator access required.');
         }

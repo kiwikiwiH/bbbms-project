@@ -20,7 +20,13 @@ class BloodRequestController extends Controller
     {
         $hospital = auth()->user()->hospital;
         $search = trim((string) $request->query('q', ''));
+        $bloodGroup = trim((string) $request->query('blood_group', ''));
         $view = $request->query('view', 'incoming') === 'outgoing' ? 'outgoing' : 'incoming';
+        $allowedGroups = config('tarrlok.blood_groups');
+
+        if ($bloodGroup !== '' && ! in_array($bloodGroup, $allowedGroups, true)) {
+            $bloodGroup = '';
+        }
 
         $query = BloodRequest::query()
             ->when($search !== '', function ($query) use ($search, $view) {
@@ -33,28 +39,64 @@ class BloodRequestController extends Controller
                     }
                 });
             })
+            ->when($bloodGroup !== '', fn ($query) => $query->where('blood_group', $bloodGroup))
             ->latest();
 
         if ($view === 'outgoing') {
             $requests = (clone $query)
-                ->with('fulfillingHospital')
+                ->with([
+                    'fulfillingHospital',
+                    'approvedByUser',
+                    'rejectedByUser',
+                    'fulfilledByUser',
+                    'reversedByUser',
+                ])
                 ->where('requesting_hospital_id', $hospital->id)
                 ->get();
         } else {
             $requests = (clone $query)
-                ->with('requestingHospital')
+                ->with([
+                    'requestingHospital',
+                    'approvedByUser',
+                    'rejectedByUser',
+                    'fulfilledByUser',
+                    'reversedByUser',
+                ])
                 ->where('fulfilling_hospital_id', $hospital->id)
-                ->get();
+                ->get()
+                ->map(function (BloodRequest $req) use ($hospital) {
+                    $onHand = $req->availableStockAt($hospital);
+                    $free = $req->freeStockAt($hospital);
+                    $req->setAttribute('stock_on_hand', $onHand);
+                    $req->setAttribute('stock_available', $free);
+                    $req->setAttribute('stock_sufficient', $free >= $req->quantity);
+                    $req->setAttribute('stock_shortfall', max(0, $req->quantity - $free));
+                    $req->setAttribute('stock_reserved_elsewhere', max(0, $onHand - $free - ($req->status === 'approved' ? $req->quantity : 0)));
+
+                    return $req;
+                });
         }
+
+        $availableByGroup = $hospital->bloodUnits()
+            ->available()
+            ->selectRaw('blood_group, count(*) as total')
+            ->groupBy('blood_group')
+            ->pluck('total', 'blood_group');
 
         return view('hospital.requests.index', [
             'hospital' => $hospital,
             'requests' => $requests,
             'search' => $search,
+            'bloodGroup' => $bloodGroup,
+            'bloodGroups' => $allowedGroups,
             'view' => $view,
+            'availableByGroup' => $availableByGroup,
             'inventoryNote' => $hospital->availableUnitsCount(),
             'incomingPending' => $hospital->incomingBloodRequests()->whereIn('status', ['pending', 'approved'])->count(),
             'outgoingPending' => $hospital->outgoingBloodRequests()->whereIn('status', ['pending', 'approved'])->count(),
+            'insufficientIncoming' => $view === 'incoming'
+                ? $requests->filter(fn (BloodRequest $req) => $req->isActionable() && ! $req->stock_sufficient)->count()
+                : 0,
         ]);
     }
 
@@ -137,9 +179,31 @@ class BloodRequestController extends Controller
             return back()->with('status', 'Only pending requests can be approved.');
         }
 
-        $bloodRequest->update(['status' => 'approved', 'rejection_reason' => null]);
+        $hospital = auth()->user()->hospital;
+        $free = $bloodRequest->freeStockAt($hospital);
 
-        return back()->with('status', $bloodRequest->request_code.' approved. Issue units when ready.');
+        if ($free < $bloodRequest->quantity) {
+            $onHand = $bloodRequest->availableStockAt($hospital);
+            $reserved = max(0, $onHand - $free);
+
+            return back()->withErrors([
+                'stock' => $bloodRequest->request_code.' cannot be approved: only '.$free.' free cleared '
+                    .$bloodRequest->blood_group.' unit(s) ('.$onHand.' on hand'
+                    .($reserved > 0 ? ', '.$reserved.' already reserved by other approved requests' : '')
+                    .'), but '.$bloodRequest->quantity.' were requested. Reject the request or wait until lab clears more stock.',
+            ]);
+        }
+
+        $bloodRequest->update([
+            'status' => 'approved',
+            'rejection_reason' => null,
+            'approved_by' => auth()->id(),
+            'approved_at' => now(),
+            'rejected_by' => null,
+            'rejected_at' => null,
+        ]);
+
+        return back()->with('status', $bloodRequest->request_code.' approved ('.$free.' '.$bloodRequest->blood_group.' free). Issue units when ready.');
     }
 
     public function reject(Request $request, BloodRequest $bloodRequest): RedirectResponse
@@ -154,12 +218,42 @@ class BloodRequestController extends Controller
             return back()->with('status', 'This request can no longer be rejected.');
         }
 
+        $defaultReason = $bloodRequest->hasSufficientStockAt(auth()->user()->hospital)
+            ? 'Rejected by fulfilling hospital.'
+            : 'Insufficient cleared '.$bloodRequest->blood_group.' stock at fulfilling hospital.';
+
         $bloodRequest->update([
             'status' => 'rejected',
-            'rejection_reason' => $validated['rejection_reason'] ?? 'Rejected by fulfilling hospital.',
+            'rejection_reason' => $validated['rejection_reason'] ?: $defaultReason,
+            'rejected_by' => auth()->id(),
+            'rejected_at' => now(),
+            'approved_by' => $bloodRequest->approved_by,
+            'approved_at' => $bloodRequest->approved_at,
         ]);
 
         return back()->with('status', $bloodRequest->request_code.' rejected.');
+    }
+
+    public function reverse(Request $request, BloodRequest $bloodRequest): RedirectResponse
+    {
+        $this->ensureIncoming($bloodRequest);
+
+        $validated = $request->validate([
+            'reverse_reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        if ($bloodRequest->status !== 'approved') {
+            return back()->with('status', 'Only approved (not yet issued) requests can be reversed.');
+        }
+
+        $bloodRequest->update([
+            'status' => 'pending',
+            'reversed_by' => auth()->id(),
+            'reversed_at' => now(),
+            'reverse_reason' => $validated['reverse_reason'] ?: 'Approval reversed before issue.',
+        ]);
+
+        return back()->with('status', $bloodRequest->request_code.' reversed to pending. You can approve again when stock is ready, or reject.');
     }
 
     public function issue(BloodRequest $bloodRequest): RedirectResponse
@@ -174,15 +268,20 @@ class BloodRequestController extends Controller
             return back()->with('status', 'Rejected requests cannot be fulfilled.');
         }
 
-        if ($bloodRequest->status === 'pending') {
-            $bloodRequest->update(['status' => 'approved']);
+        $hospital = auth()->user()->hospital;
+        $free = $bloodRequest->freeStockAt($hospital);
+
+        if ($free < $bloodRequest->quantity) {
+            return back()->withErrors([
+                'stock' => 'Not enough free cleared '.$bloodRequest->blood_group.' units (have '.$free.' free, need '.$bloodRequest->quantity.'). Reject or reverse other approvals first, or wait for lab stock.',
+            ]);
         }
 
-        $hospital = auth()->user()->hospital;
-
-        if ($hospital->availableUnitsCount($bloodRequest->blood_group) < $bloodRequest->quantity) {
-            return back()->withErrors([
-                'stock' => 'Not enough cleared '.$bloodRequest->blood_group.' units in inventory. Lab staff must register units and complete screening first.',
+        if ($bloodRequest->status === 'pending') {
+            $bloodRequest->update([
+                'status' => 'approved',
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
             ]);
         }
 
@@ -233,6 +332,7 @@ class BloodRequestController extends Controller
                 $bloodRequest->update([
                     'status' => 'fulfilled',
                     'fulfilled_at' => now(),
+                    'fulfilled_by' => auth()->id(),
                 ]);
 
                 return $anchorFailures;
@@ -258,20 +358,26 @@ class BloodRequestController extends Controller
         return back()->with('status', $message);
     }
 
-    public function cancel(BloodRequest $bloodRequest): RedirectResponse
+    public function cancel(Request $request, BloodRequest $bloodRequest): RedirectResponse
     {
         abort_unless(
             $bloodRequest->requesting_hospital_id === auth()->user()->hospital_id,
             403
         );
 
-        if ($bloodRequest->status !== 'pending') {
-            return back()->with('status', 'Only pending outgoing requests can be cancelled.');
+        $validated = $request->validate([
+            'rejection_reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        if (! in_array($bloodRequest->status, ['pending', 'approved'], true)) {
+            return back()->with('status', 'Only pending or approved outgoing requests can be cancelled.');
         }
 
         $bloodRequest->update([
             'status' => 'rejected',
-            'rejection_reason' => 'Cancelled by requesting hospital.',
+            'rejection_reason' => $validated['rejection_reason'] ?: 'Cancelled by requesting hospital.',
+            'rejected_by' => auth()->id(),
+            'rejected_at' => now(),
         ]);
 
         return back()->with('status', $bloodRequest->request_code.' cancelled.');

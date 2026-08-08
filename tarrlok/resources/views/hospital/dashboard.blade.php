@@ -27,6 +27,16 @@
         <div class="hospital-stat-value" style="font-size:16px;">{{ $hospital->license_id }}</div>
         <div class="hospital-stat-note">Verified by Tarrlok</div>
     </div>
+    @if ($insufficientFlags > 0)
+        <div class="hospital-stat hospital-stat-warning">
+            <div class="hospital-stat-label">Stock shortfalls</div>
+            <div class="hospital-stat-value">{{ $insufficientFlags }}</div>
+            <div class="hospital-stat-note">
+                Incoming request{{ $insufficientFlags === 1 ? '' : 's' }} flagged —
+                <a href="{{ route('hospital.requests') }}" style="color:#a20513;">Reject or wait for lab</a>
+            </div>
+        </div>
+    @endif
     @if ($expiringSoon > 0 || $expiredCount > 0)
         <div class="hospital-stat hospital-stat-warning">
             <div class="hospital-stat-label">Expiry alerts</div>
@@ -61,6 +71,89 @@
         </div>
     </div>
 @endif
+
+<div class="hospital-analytics">
+    <div class="hospital-card">
+        <div class="hospital-card-head">
+            <h2 class="hospital-card-title">Cleared stock by blood type</h2>
+        </div>
+        <div class="hospital-card-body">
+            @if ($availableByGroup->isEmpty())
+                <p class="hospital-muted">No cleared units yet. Lab screening must clear stock first.</p>
+            @else
+                <ul class="hospital-bar-chart">
+                    @foreach ($availableByGroup as $group => $count)
+                        <li>
+                            <div class="hospital-bar-meta">
+                                <a href="{{ route('hospital.inventory', ['blood_group' => $group, 'screening' => 'cleared']) }}" class="hospital-blood-group">{{ $group }}</a>
+                                <strong>{{ $count }}</strong>
+                            </div>
+                            <div class="hospital-bar-track">
+                                <a href="{{ route('hospital.inventory', ['blood_group' => $group, 'screening' => 'cleared']) }}" class="hospital-bar-fill-link" aria-label="View {{ $group }} inventory">
+                                    <span class="hospital-bar-fill" style="width: {{ ($count / $stockMax) * 100 }}%"></span>
+                                </a>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+                <p class="hospital-field-hint" style="margin:12px 0 0;">
+                    Tip: approve partner requests only when the matching bar covers the quantity asked.
+                </p>
+            @endif
+        </div>
+    </div>
+
+    <div class="hospital-card">
+        <div class="hospital-card-head">
+            <h2 class="hospital-card-title">Incoming request status</h2>
+        </div>
+        <div class="hospital-card-body">
+            <ul class="hospital-bar-chart">
+                @foreach ($requestStatusCounts as $status => $count)
+                    <li>
+                        <div class="hospital-bar-meta">
+                            <span @class(['hospital-req-status', $status])>{{ ucfirst($status) }}</span>
+                            <strong>{{ $count }}</strong>
+                        </div>
+                        <div class="hospital-bar-track">
+                            <span class="hospital-bar-fill is-{{ $status }}" style="width: {{ ($count / $requestMax) * 100 }}%"></span>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+
+    <div class="hospital-card">
+        <div class="hospital-card-head">
+            <h2 class="hospital-card-title">Screening outcomes</h2>
+        </div>
+        <div class="hospital-card-body">
+            <ul class="hospital-bar-chart">
+                @foreach ($screeningBreakdown as $status => $count)
+                    <li>
+                        <div class="hospital-bar-meta">
+                            <span @class(['hospital-screening-badge', $status])>
+                                @if ($status === 'failed')
+                                    Failed / disease reject
+                                @else
+                                    {{ ucfirst($status) }}
+                                @endif
+                            </span>
+                            <strong>{{ $count }}</strong>
+                        </div>
+                        <div class="hospital-bar-track">
+                            <span class="hospital-bar-fill is-screen-{{ $status }}" style="width: {{ ($count / $screeningMax) * 100 }}%"></span>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+            <p class="hospital-field-hint" style="margin:12px 0 0;">
+                Failed units (HIV, Hep B, Hep C, syphilis) never enter issuable inventory.
+            </p>
+        </div>
+    </div>
+</div>
 
 <div class="hospital-card">
     <div class="hospital-card-head">
