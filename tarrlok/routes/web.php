@@ -48,6 +48,7 @@ Route::middleware(['auth', 'hospital'])->prefix('hospital')->name('hospital.')->
     Route::post('/requests', [BloodRequestController::class, 'store'])->name('requests.store');
     Route::post('/requests/{bloodRequest}/approve', [BloodRequestController::class, 'approve'])->name('requests.approve');
     Route::post('/requests/{bloodRequest}/reject', [BloodRequestController::class, 'reject'])->name('requests.reject');
+    Route::post('/requests/{bloodRequest}/reverse', [BloodRequestController::class, 'reverse'])->name('requests.reverse');
     Route::post('/requests/{bloodRequest}/issue', [BloodRequestController::class, 'issue'])->name('requests.issue');
     Route::post('/requests/{bloodRequest}/cancel', [BloodRequestController::class, 'cancel'])->name('requests.cancel');
     Route::get('/partners', [PartnerExchangeController::class, 'index'])->name('partners');

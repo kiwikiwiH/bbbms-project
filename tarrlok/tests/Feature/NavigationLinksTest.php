@@ -51,7 +51,19 @@ class NavigationLinksTest extends TestCase
             ->assertSee(route('hospital.requests', absolute: false), false)
             ->assertSee(route('hospital.lab-staff.index', absolute: false), false)
             ->assertSee(route('hospital.facility', absolute: false), false)
-            ->assertSee(route('hospital.blockchain', absolute: false), false);
+            ->assertSee(route('hospital.blockchain', absolute: false), false)
+            ->assertSee('Cleared stock by blood type', false);
+
+        $this->actingAs($hospitalUser)
+            ->get('/hospital/requests')
+            ->assertOk()
+            ->assertSee('Incoming', false)
+            ->assertSee('Blood type', false);
+
+        $this->actingAs($hospitalUser)
+            ->get('/hospital/inventory')
+            ->assertOk()
+            ->assertSee('Blood type', false);
 
         $this->actingAs($labUser)
             ->get('/lab')

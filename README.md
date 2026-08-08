@@ -422,6 +422,11 @@ Example tunnel config: **[deploy/cloudflared-tesnet.xyz.example.yml](deploy/clou
 - [x] Lab portal — register units (donor phone lookup), screening, inventory
 - [x] Lab screening — quarantine → cleared/failed; only cleared units issuable
 - [x] Partner exchange + incoming/outgoing blood requests
+- [x] **Stock check before Approve** — insufficient blood type is flagged; Approve/Issue blocked until stock covers quantity
+- [x] **Reverse approval** — undo Approve before issue; cancel approved outgoing requests
+- [x] Request **audit log** (requested / approved / reversed / rejected / issued)
+- [x] Blood-type (and screening) **filters** on inventory and requests
+- [x] Simple hospital **analytics** charts (stock by group, request status, screening outcomes)
 - [x] Approve, reject (with reason), issue — FIFO, units transfer to requester
 - [x] Unit trace — lifecycle timeline + blockchain tx hashes
 - [x] **Public donor tracking** — `/track` by unit ID (one unit, no login, consent)

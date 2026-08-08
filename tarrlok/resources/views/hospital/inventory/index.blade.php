@@ -13,17 +13,38 @@
         <p class="hospital-flow-note" style="margin:0;">
             <span class="material-symbols-outlined">science</span>
             Units must pass lab screening (HIV, Hep B/C, Syphilis) before they count as available.
+            Reactive markers reject the unit from stock.
             <a href="{{ route('hospital.requests') }}" style="color:#a20513;">Blood Requests</a>.
         </p>
     </div>
 </div>
 
+<form class="hospital-filter-bar" method="GET" action="{{ route('hospital.inventory') }}">
+    <label class="hospital-filter-label" for="inv_blood_group">Blood type</label>
+    <select id="inv_blood_group" name="blood_group" class="hospital-input hospital-filter-select" onchange="this.form.submit()">
+        <option value="">All groups</option>
+        @foreach ($bloodGroups as $group)
+            <option value="{{ $group }}" @selected($bloodGroup === $group)>{{ $group }}</option>
+        @endforeach
+    </select>
+    <label class="hospital-filter-label" for="inv_screening">Screening</label>
+    <select id="inv_screening" name="screening" class="hospital-input hospital-filter-select" onchange="this.form.submit()">
+        <option value="" @selected($screening === '')>All</option>
+        <option value="pending" @selected($screening === 'pending')>Pending</option>
+        <option value="cleared" @selected($screening === 'cleared')>Cleared</option>
+        <option value="failed" @selected($screening === 'failed')>Failed / disease reject</option>
+    </select>
+    @if ($bloodGroup || $screening)
+        <a href="{{ route('hospital.inventory') }}" class="hospital-btn hospital-btn-outline hospital-btn-sm">Clear filters</a>
+    @endif
+</form>
+
 <div class="hospital-stats" style="margin-bottom:20px;">
     @forelse ($availableByGroup as $group => $count)
-        <div class="hospital-stat">
+        <a href="{{ route('hospital.inventory', ['blood_group' => $group, 'screening' => 'cleared']) }}" class="hospital-stat hospital-stat-link">
             <div class="hospital-stat-label">{{ $group }} cleared</div>
             <div class="hospital-stat-value">{{ $count }}</div>
-        </div>
+        </a>
     @empty
         <div class="hospital-stat">
             <div class="hospital-stat-label">Cleared units</div>
@@ -57,11 +78,17 @@
 
 <div class="hospital-card">
     <div class="hospital-card-head">
-        <h2 class="hospital-card-title">All registered units</h2>
+        <h2 class="hospital-card-title">
+            @if ($bloodGroup || $screening)
+                Filtered units
+            @else
+                All registered units
+            @endif
+        </h2>
     </div>
     @if ($units->flatten()->isEmpty())
         <div class="hospital-placeholder">
-            <p>No blood units in inventory yet.</p>
+            <p>No blood units match these filters.</p>
         </div>
     @else
         <div class="hospital-table-wrap">
