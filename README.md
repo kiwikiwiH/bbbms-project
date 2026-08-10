@@ -423,6 +423,7 @@ Example tunnel config: **[deploy/cloudflared-tesnet.xyz.example.yml](deploy/clou
 - [x] Tarrlok-branded login, registration, forgot/reset password, profile
 - [x] 3-step hospital registration (Ghana regions, HeFRA license)
 - [x] Platform admin — approve / reject registrations
+- [x] Platform admin — **revoke access** for long-approved hospitals (suspends staff, closes open requests, email notice)
 - [x] **Shared blockchain ledger** on admin, hospital, and lab portals
 - [x] Integrity compare (MySQL vs `getUnit()`) and **blocked-attempt** log
 - [x] Admin blockchain dashboard — chain health, anchor stats, recent tx log

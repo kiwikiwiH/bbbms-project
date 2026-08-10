@@ -68,7 +68,7 @@ class LoginRequest extends FormRequest
             Auth::logout();
 
             $message = $user->hospital->status === 'rejected'
-                ? 'Your facility registration was not approved. Please contact support.'
+                ? 'Your facility’s network access is not active (registration rejected or access revoked). Contact Tarrlok support.'
                 : 'Your facility registration is still under review.';
 
             throw ValidationException::withMessages([

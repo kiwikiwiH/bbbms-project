@@ -204,9 +204,72 @@
             </section>
         </div>
     @elseif ($hospital->status === 'approved')
-        <div class="admin-actions">
-            <p style="margin:0;font-size:14px;color:#166534;">This facility is approved. The administrator can sign in.</p>
+        @php
+            $contactName = $contact?->name ?? 'Hospital Administrator';
+            $defaultRevokeReason = 'Network access has been revoked by Tarrlok platform administration following a compliance or operational review.';
+        @endphp
+
+        <div class="admin-actions" style="margin-bottom:16px;">
+            <p style="margin:0;font-size:14px;color:#166534;">This facility is approved. The administrator can sign in and appear on partner exchange.</p>
         </div>
+
+        <section class="admin-letter">
+            <div class="admin-letter-head reject">
+                <span class="material-symbols-outlined">person_off</span>
+                <div>
+                    <strong>Revoke network access</strong>
+                    <p>Removes the facility from the live network. Staff cannot sign in. Historical units and audit records are kept.</p>
+                </div>
+            </div>
+            <div class="admin-letter-body">
+                <p class="admin-letter-fixed">Dear {{ $contactName }},</p>
+                <p class="admin-letter-fixed">
+                    Platform administration has decided to <strong>revoke network access</strong> for
+                    <strong>{{ $hospital->name }}</strong>
+                    (HeFRA Licence: <strong>{{ $hospital->license_id }}</strong>).
+                </p>
+
+                <form method="POST" action="{{ route('admin.registrations.revoke', $hospital) }}" onsubmit="return confirm('Revoke network access for {{ $hospital->name }}? Staff will be signed out of hospital and lab portals.');">
+                    @csrf
+
+                    <label class="admin-letter-label" for="revoke_reason">Reason for revocation (required)</label>
+                    <textarea
+                        class="admin-letter-input admin-letter-input-reason"
+                        id="revoke_reason"
+                        name="rejection_reason"
+                        rows="4"
+                        required
+                        minlength="10"
+                        maxlength="1000"
+                    >{{ old('rejection_reason', $defaultRevokeReason) }}</textarea>
+                    @error('rejection_reason')
+                        <p class="admin-letter-error">{{ $message }}</p>
+                    @enderror
+
+                    <label class="admin-letter-label" for="revoke_admin_message">Additional notes (optional)</label>
+                    <textarea
+                        class="admin-letter-input"
+                        id="revoke_admin_message"
+                        name="admin_message"
+                        rows="3"
+                        maxlength="2000"
+                    >{{ old('admin_message') }}</textarea>
+                    @error('admin_message')
+                        <p class="admin-letter-error">{{ $message }}</p>
+                    @enderror
+
+                    <p class="admin-letter-fixed">
+                        Open partner blood requests involving this facility will be closed. Inventory history remains for audit.
+                    </p>
+                    <p class="admin-letter-signoff">Yours faithfully,<br><strong>Tarrlok Platform Administration</strong></p>
+
+                    <button type="submit" class="admin-btn admin-btn-reject">
+                        <span class="material-symbols-outlined">person_off</span>
+                        Revoke access &amp; send email
+                    </button>
+                </form>
+            </div>
+        </section>
     @endif
 </div>
 @endsection

@@ -91,6 +91,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/registrations/{hospital}', [RegistrationReviewController::class, 'show'])->name('registrations.show');
     Route::post('/registrations/{hospital}/approve', [RegistrationReviewController::class, 'approve'])->name('registrations.approve');
     Route::post('/registrations/{hospital}/reject', [RegistrationReviewController::class, 'reject'])->name('registrations.reject');
+    Route::post('/registrations/{hospital}/revoke', [RegistrationReviewController::class, 'revoke'])->name('registrations.revoke');
 });
 
 Route::middleware('auth')->group(function () {
