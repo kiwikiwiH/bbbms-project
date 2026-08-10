@@ -14,6 +14,10 @@
         <span class="material-symbols-outlined">link</span>
         Blockchain
     </a>
+    <a href="{{ route('admin.auth-log') }}" @class(['active' => $route === 'admin.auth-log'])>
+        <span class="material-symbols-outlined">history</span>
+        Sign-in log
+    </a>
     <a href="{{ route('admin.trace') }}" @class(['active' => str_starts_with($route ?? '', 'admin.trace')])>
         <span class="material-symbols-outlined">search</span>
         Trace Unit

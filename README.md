@@ -298,6 +298,7 @@ Sync after changes: `php artisan db:seed --class=AdminSeeder`
 | URL | Purpose |
 |-----|---------|
 | `/admin` | Overview & pending registrations |
+| `/admin/auth-log` | **Sign-in log** — who logged in / out / failed (admin only) |
 | `/admin/blockchain` | **Full audit trail**, chain health, **unit history search** (Block N · tx), integrity, blocked attempts |
 | `/admin/registrations` | List / filter hospital registrations |
 | `/admin/registrations/{hospital}` | Approve or reject a facility |
@@ -438,6 +439,7 @@ Example tunnel config: **[deploy/cloudflared-tesnet.xyz.example.yml](deploy/clou
 - [x] Integrity compare (MySQL vs `getUnit()`) and **blocked-attempt** log
 - [x] Admin blockchain dashboard — chain health, anchor stats, recent tx log, unit history search
 - [x] **Component type** on bags and partner requests (Whole Blood / RBC / FFP / Platelets / Cryo; per-component shelf life)
+- [x] **Admin sign-in log** — login / logout / failed attempts visible at `/admin/auth-log`
 - [x] **Printable bag QR label** — lab prints sticker (unit ID + group/component/expiry + QR → `/track`); donor slip also has QR
 - [x] Lab portal — register units (donor phone lookup), screening, inventory
 - [x] Lab screening — quarantine → cleared/failed; only cleared units issuable

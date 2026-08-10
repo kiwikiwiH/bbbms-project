@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BloodUnitTraceController;
 use App\Http\Controllers\BlockchainLedgerController;
+use App\Http\Controllers\Admin\AuthActivityLogController;
 use App\Http\Controllers\Admin\BlockchainController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\RegistrationReviewController;
@@ -86,6 +87,7 @@ Route::middleware(['auth', 'lab'])->prefix('lab')->name('lab.')->group(function 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', AdminDashboardController::class)->name('dashboard');
     Route::get('/blockchain', BlockchainController::class)->name('blockchain');
+    Route::get('/auth-log', AuthActivityLogController::class)->name('auth-log');
     Route::get('/trace', [BloodUnitTraceController::class, 'index'])->name('trace');
     Route::get('/trace/{bloodUnit}', [BloodUnitTraceController::class, 'show'])->name('trace.show');
     Route::get('/registrations', [RegistrationReviewController::class, 'index'])->name('registrations.index');

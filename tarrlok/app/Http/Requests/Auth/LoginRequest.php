@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\AuthActivityLog;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -45,6 +46,8 @@ class LoginRequest extends FormRequest
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
+            AuthActivityLog::record('login_failed', $this, null, (string) $this->string('email'));
+
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
@@ -54,6 +57,8 @@ class LoginRequest extends FormRequest
 
         if ($user->status !== 'active') {
             Auth::logout();
+
+            AuthActivityLog::record('login_failed', $this, $user);
 
             $message = $user->status === 'suspended'
                 ? 'Your account has been suspended. Contact your hospital administrator.'
@@ -66,6 +71,8 @@ class LoginRequest extends FormRequest
 
         if ($user->hospital && $user->hospital->status !== 'approved') {
             Auth::logout();
+
+            AuthActivityLog::record('login_failed', $this, $user);
 
             $message = $user->hospital->status === 'rejected'
                 ? 'Your facility’s network access is not active (registration rejected or access revoked). Contact Tarrlok support.'
