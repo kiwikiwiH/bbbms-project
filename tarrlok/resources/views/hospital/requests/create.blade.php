@@ -67,6 +67,16 @@
                 </div>
             </fieldset>
 
+            <div class="hospital-field">
+                <label class="hospital-label" for="component_type">Component type</label>
+                <p class="hospital-field-hint">Product needed (must match partner inventory bags).</p>
+                <select class="hospital-input" id="component_type" name="component_type" required>
+                    @foreach ($componentTypes as $key => $label)
+                        <option value="{{ $key }}" @selected(old('component_type', 'whole_blood') === $key)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
             <div class="hospital-field hospital-date-field" style="margin-top:0;padding-top:20px;">
                 <label class="hospital-label" for="quantity">Quantity</label>
                 <p class="hospital-field-hint">Number of units needed (1–50).</p>

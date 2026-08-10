@@ -13,6 +13,7 @@ class BloodUnit extends Model
         'donor_id',
         'unit_code',
         'blood_group',
+        'component_type',
         'status',
         'screening_status',
         'recorded_by',
@@ -135,11 +136,29 @@ class BloodUnit extends Model
         return (int) now()->diffInDays($this->expires_at, false);
     }
 
-    public static function calculateExpiresAt(\DateTimeInterface|string $collectedAt): \Illuminate\Support\Carbon
-    {
-        $days = (int) config('tarrlok.blood_shelf_life_days', 35);
+    public static function calculateExpiresAt(
+        \DateTimeInterface|string $collectedAt,
+        ?string $componentType = null
+    ): \Illuminate\Support\Carbon {
+        $componentType = $componentType ?: 'whole_blood';
+        $days = (int) (config('tarrlok.component_shelf_life_days.'.$componentType)
+            ?? config('tarrlok.blood_shelf_life_days', 35));
 
         return \Illuminate\Support\Carbon::parse($collectedAt)->addDays($days);
+    }
+
+    public static function shelfLifeDays(?string $componentType = null): int
+    {
+        $componentType = $componentType ?: 'whole_blood';
+
+        return (int) (config('tarrlok.component_shelf_life_days.'.$componentType)
+            ?? config('tarrlok.blood_shelf_life_days', 35));
+    }
+
+    public function componentLabel(): string
+    {
+        return config('tarrlok.component_types.'.$this->component_type)
+            ?? ucwords(str_replace('_', ' ', (string) $this->component_type));
     }
 
     public function donorStatusLabel(): string

@@ -13,13 +13,13 @@
 
 @section('content')
 <div class="hospital-request-tabs">
-    <a href="{{ route('hospital.requests', array_filter(['q' => $search ?: null, 'blood_group' => $bloodGroup ?: null])) }}" @class(['hospital-request-tab', 'active' => $view === 'incoming'])>
+    <a href="{{ route('hospital.requests', array_filter(['q' => $search ?: null, 'blood_group' => $bloodGroup ?: null, 'component_type' => $componentType ?: null])) }}" @class(['hospital-request-tab', 'active' => $view === 'incoming'])>
         Incoming
         @if ($incomingPending > 0)
             <span class="hospital-tab-badge">{{ $incomingPending }}</span>
         @endif
     </a>
-    <a href="{{ route('hospital.requests', array_filter(['view' => 'outgoing', 'q' => $search ?: null, 'blood_group' => $bloodGroup ?: null])) }}" @class(['hospital-request-tab', 'active' => $view === 'outgoing'])>
+    <a href="{{ route('hospital.requests', array_filter(['view' => 'outgoing', 'q' => $search ?: null, 'blood_group' => $bloodGroup ?: null, 'component_type' => $componentType ?: null])) }}" @class(['hospital-request-tab', 'active' => $view === 'outgoing'])>
         Outgoing
         @if ($outgoingPending > 0)
             <span class="hospital-tab-badge">{{ $outgoingPending }}</span>
@@ -45,6 +45,13 @@
             <option value="">All groups</option>
             @foreach ($bloodGroups as $group)
                 <option value="{{ $group }}" @selected($bloodGroup === $group)>{{ $group }}</option>
+            @endforeach
+        </select>
+        <label class="hospital-filter-label" for="component_type">Component</label>
+        <select id="component_type" name="component_type" class="hospital-input hospital-filter-select" onchange="this.form.submit()">
+            <option value="">All components</option>
+            @foreach ($componentTypes as $key => $label)
+                <option value="{{ $key }}" @selected($componentType === $key)>{{ $label }}</option>
             @endforeach
         </select>
         <button type="submit" class="hospital-btn hospital-btn-outline hospital-btn-sm">Apply</button>
@@ -105,6 +112,7 @@
                         <th>Request ID</th>
                         <th>{{ $view === 'outgoing' ? 'Partner (from)' : 'Hospital (requesting)' }}</th>
                         <th>Blood group</th>
+                        <th>Component</th>
                         <th>Quantity</th>
                         @if ($view === 'incoming')
                             <th>Your stock</th>
@@ -130,6 +138,7 @@
                                 @endif
                             </td>
                             <td><span class="hospital-blood-group">{{ $req->blood_group }}</span></td>
+                            <td>{{ $req->componentLabel() }}</td>
                             <td>{{ $req->quantity }} {{ str('unit')->plural($req->quantity) }}</td>
                             @if ($view === 'incoming')
                                 <td>

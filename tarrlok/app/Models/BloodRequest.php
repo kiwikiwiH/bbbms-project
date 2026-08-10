@@ -13,6 +13,7 @@ class BloodRequest extends Model
         'requesting_hospital_id',
         'fulfilling_hospital_id',
         'blood_group',
+        'component_type',
         'quantity',
         'urgency',
         'status',
@@ -89,7 +90,7 @@ class BloodRequest extends Model
 
     public function availableStockAt(Hospital $hospital): int
     {
-        return $hospital->availableUnitsCount($this->blood_group);
+        return $hospital->availableUnitsCount($this->blood_group, $this->component_type);
     }
 
     /**
@@ -102,6 +103,7 @@ class BloodRequest extends Model
         $reserved = static::query()
             ->where('fulfilling_hospital_id', $hospital->id)
             ->where('blood_group', $this->blood_group)
+            ->where('component_type', $this->component_type ?: 'whole_blood')
             ->where('status', 'approved')
             ->when($this->exists, fn ($q) => $q->where('id', '!=', $this->id))
             ->sum('quantity');
@@ -128,7 +130,7 @@ class BloodRequest extends Model
 
         $events[] = [
             'label' => 'Requested',
-            'detail' => ($this->requestingHospital?->name ?? 'Requesting hospital').' asked for '.$this->quantity.' '.$this->blood_group,
+            'detail' => ($this->requestingHospital?->name ?? 'Requesting hospital').' asked for '.$this->quantity.' '.$this->blood_group.' '.$this->componentLabel(),
             'at' => $this->created_at,
         ];
 
@@ -182,5 +184,11 @@ class BloodRequest extends Model
         });
 
         return $events;
+    }
+
+    public function componentLabel(): string
+    {
+        return config('tarrlok.component_types.'.$this->component_type)
+            ?? ucwords(str_replace('_', ' ', (string) ($this->component_type ?: 'whole_blood')));
     }
 }

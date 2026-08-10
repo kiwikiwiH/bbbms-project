@@ -43,6 +43,7 @@
             <ul class="donation-slip-meta">
                 <li><strong>Facility:</strong> {{ $hospital->name }}</li>
                 <li><strong>Blood group:</strong> {{ $unit->blood_group }}</li>
+                <li><strong>Component:</strong> {{ $unit->componentLabel() }}</li>
                 <li><strong>Collected:</strong> {{ $unit->collected_at->format('M j, Y') }}</li>
                 @if ($unit->donor)
                     <li><strong>Donor:</strong> {{ $unit->donor->name }}</li>

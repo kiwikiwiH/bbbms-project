@@ -27,6 +27,13 @@
             <option value="{{ $group }}" @selected($bloodGroup === $group)>{{ $group }}</option>
         @endforeach
     </select>
+    <label class="hospital-filter-label" for="inv_component_type">Component</label>
+    <select id="inv_component_type" name="component_type" class="hospital-input hospital-filter-select" onchange="this.form.submit()">
+        <option value="">All components</option>
+        @foreach ($componentTypes as $key => $label)
+            <option value="{{ $key }}" @selected($componentType === $key)>{{ $label }}</option>
+        @endforeach
+    </select>
     <label class="hospital-filter-label" for="inv_screening">Screening</label>
     <select id="inv_screening" name="screening" class="hospital-input hospital-filter-select" onchange="this.form.submit()">
         <option value="" @selected($screening === '')>All</option>
@@ -34,7 +41,7 @@
         <option value="cleared" @selected($screening === 'cleared')>Cleared</option>
         <option value="failed" @selected($screening === 'failed')>Failed / disease reject</option>
     </select>
-    @if ($bloodGroup || $screening)
+    @if ($bloodGroup || $componentType || $screening)
         <a href="{{ route('hospital.inventory') }}" class="hospital-btn hospital-btn-outline hospital-btn-sm">Clear filters</a>
     @endif
 </form>
@@ -68,6 +75,7 @@
                     <li>
                         <a href="{{ route('hospital.trace.show', $unit) }}" class="hospital-request-id">{{ $unit->unit_code }}</a>
                         <span class="hospital-blood-group">{{ $unit->blood_group }}</span>
+                        <span>{{ $unit->componentLabel() }}</span>
                         <span class="hospital-expiry-badge warning">Expires {{ $unit->expires_at->format('M j, Y') }}</span>
                     </li>
                 @endforeach
@@ -97,6 +105,7 @@
                     <tr>
                         <th>Unit ID</th>
                         <th>Blood group</th>
+                        <th>Component</th>
                         <th>Screening</th>
                         <th>Status</th>
                         <th>Collected</th>
@@ -111,6 +120,7 @@
                                 <a href="{{ route('hospital.trace.show', $unit) }}" class="hospital-request-id">{{ $unit->unit_code }}</a>
                             </td>
                             <td><span class="hospital-blood-group">{{ $unit->blood_group }}</span></td>
+                            <td>{{ $unit->componentLabel() }}</td>
                             <td>
                                 <span @class(['hospital-screening-badge', $unit->screening_status])>
                                     {{ $unit->screeningStatusLabel() }}

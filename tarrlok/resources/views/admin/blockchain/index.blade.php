@@ -280,7 +280,7 @@
                     <div class="bc-unit-top">
                         <div>
                             <strong>{{ $unit->unit_code }}</strong>
-                            <span class="bc-unit-meta">{{ $unit->blood_group }} · {{ $unit->hospital->name }}</span>
+                            <span class="bc-unit-meta">{{ $unit->blood_group }} · {{ $unit->componentLabel() }} · {{ $unit->hospital->name }}</span>
                         </div>
                         <a href="{{ route('admin.trace.show', $unit) }}">Trace unit</a>
                     </div>

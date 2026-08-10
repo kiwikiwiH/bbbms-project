@@ -48,6 +48,7 @@
                     <tr>
                         <th>Unit ID</th>
                         <th>Blood group</th>
+                        <th>Component</th>
                         <th>Screening</th>
                         <th>Stock status</th>
                         <th>Collected</th>
@@ -62,6 +63,7 @@
                                 <a href="{{ route('lab.trace.show', $unit) }}" class="hospital-request-id">{{ $unit->unit_code }}</a>
                             </td>
                             <td><span class="hospital-blood-group">{{ $unit->blood_group }}</span></td>
+                            <td>{{ $unit->componentLabel() }}</td>
                             <td>
                                 <span @class(['hospital-screening-badge', $unit->screening_status])>
                                     {{ $unit->screeningStatusLabel() }}

@@ -101,23 +101,26 @@ class DemoSeeder extends Seeder
         ]);
 
         $groups = ['O+', 'O+', 'A+', 'B+', 'AB+'];
+        $components = ['whole_blood', 'red_blood_cells', 'fresh_frozen_plasma', 'platelets', 'red_blood_cells'];
         // First unit is older than shelf life so expiry discard can be demonstrated.
         $collectedOffsets = [40, 5, 4, 3, 2];
 
         foreach ($groups as $index => $group) {
             $collectedAt = now()->subDays($collectedOffsets[$index]);
+            $componentType = $components[$index];
 
             $unit = BloodUnit::create([
                 'hospital_id' => $ridge->id,
                 'donor_id' => $demoDonor->id,
                 'unit_code' => sprintf('UNIT-%03d-%05d', $ridge->id, $index + 1),
                 'blood_group' => $group,
+                'component_type' => $componentType,
                 'status' => 'available',
                 'screening_status' => 'cleared',
                 'recorded_by' => $ridgeLab->id,
                 'screened_by' => $ridgeLab->id,
                 'collected_at' => $collectedAt,
-                'expires_at' => BloodUnit::calculateExpiresAt($collectedAt),
+                'expires_at' => BloodUnit::calculateExpiresAt($collectedAt, $componentType),
                 'screened_at' => $collectedAt->copy()->addDay(),
                 'screening_hiv' => true,
                 'screening_hep_b' => true,

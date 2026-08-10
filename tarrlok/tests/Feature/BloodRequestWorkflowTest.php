@@ -199,30 +199,42 @@ class BloodRequestWorkflowTest extends TestCase
         ];
     }
 
-    private function makeRequest(Hospital $from, Hospital $to, string $group, int $qty): BloodRequest
-    {
+    private function makeRequest(
+        Hospital $from,
+        Hospital $to,
+        string $group,
+        int $qty,
+        string $componentType = 'whole_blood'
+    ): BloodRequest {
         return BloodRequest::create([
             'requesting_hospital_id' => $from->id,
             'fulfilling_hospital_id' => $to->id,
             'blood_group' => $group,
+            'component_type' => $componentType,
             'quantity' => $qty,
             'urgency' => 'routine',
             'status' => 'pending',
         ]);
     }
 
-    private function seedClearedUnits(Hospital $hospital, User $user, string $group, int $count): void
-    {
+    private function seedClearedUnits(
+        Hospital $hospital,
+        User $user,
+        string $group,
+        int $count,
+        string $componentType = 'whole_blood'
+    ): void {
         for ($i = 1; $i <= $count; $i++) {
             BloodUnit::create([
                 'hospital_id' => $hospital->id,
                 'unit_code' => sprintf('UNIT-%03d-%05d', $hospital->id, $i + random_int(10, 90)),
                 'blood_group' => $group,
+                'component_type' => $componentType,
                 'status' => 'available',
                 'screening_status' => 'cleared',
                 'recorded_by' => $user->id,
                 'collected_at' => now()->subDays(2),
-                'expires_at' => now()->addDays(30),
+                'expires_at' => BloodUnit::calculateExpiresAt(now()->subDays(2), $componentType),
                 'screened_at' => now()->subDay(),
                 'screening_hiv' => true,
                 'screening_hep_b' => true,
@@ -230,5 +242,37 @@ class BloodRequestWorkflowTest extends TestCase
                 'screening_syphilis' => true,
             ]);
         }
+    }
+
+    public function test_issue_matches_component_type_not_only_blood_group(): void
+    {
+        [$supplier, $requester] = $this->twoHospitals();
+        $this->seedClearedUnits($supplier['hospital'], $supplier['user'], 'O+', 2, 'fresh_frozen_plasma');
+        $request = $this->makeRequest($requester['hospital'], $supplier['hospital'], 'O+', 1, 'red_blood_cells');
+
+        $this->actingAs($supplier['user'])
+            ->post(route('hospital.requests.approve', $request))
+            ->assertSessionHasErrors('stock');
+
+        $this->seedClearedUnits($supplier['hospital'], $supplier['user'], 'O+', 1, 'red_blood_cells');
+
+        $this->actingAs($supplier['user'])
+            ->post(route('hospital.requests.approve', $request))
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('approved', $request->fresh()->status);
+    }
+
+    public function test_component_filter_on_inventory(): void
+    {
+        [$supplier] = $this->twoHospitals();
+        $this->seedClearedUnits($supplier['hospital'], $supplier['user'], 'O+', 1, 'platelets');
+        $this->seedClearedUnits($supplier['hospital'], $supplier['user'], 'O+', 1, 'whole_blood');
+
+        $this->actingAs($supplier['user'])
+            ->get(route('hospital.inventory', ['component_type' => 'platelets', 'screening' => 'cleared']))
+            ->assertOk()
+            ->assertSee('Platelets', false)
+            ->assertSee('Filtered units', false);
     }
 }

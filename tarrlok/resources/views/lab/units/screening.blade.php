@@ -4,7 +4,7 @@
 
 @section('page_title', $readOnly ? 'Lab screening report' : 'Complete lab screening')
 @section('page_subtitle')
-    {{ $unit->unit_code }} · {{ $unit->blood_group }} · Collected {{ $unit->collected_at->format('M j, Y') }}
+    {{ $unit->unit_code }} · {{ $unit->blood_group }} · {{ $unit->componentLabel() }} · Collected {{ $unit->collected_at->format('M j, Y') }}
 @endsection
 
 @section('content')
@@ -21,6 +21,8 @@
             <div class="hospital-detail-item">
                 <dt>Blood group</dt>
                 <dd><span class="hospital-blood-group">{{ $unit->blood_group }}</span></dd>
+                <dt>Component</dt>
+                <dd>{{ $unit->componentLabel() }}</dd>
             </div>
             <div class="hospital-detail-item">
                 <dt>Recorded by</dt>

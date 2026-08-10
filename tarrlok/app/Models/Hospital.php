@@ -73,12 +73,16 @@ class Hospital extends Model
             ->count();
     }
 
-    public function availableUnitsCount(?string $bloodGroup = null): int
+    public function availableUnitsCount(?string $bloodGroup = null, ?string $componentType = null): int
     {
         $query = $this->bloodUnits()->available();
 
         if ($bloodGroup) {
             $query->where('blood_group', $bloodGroup);
+        }
+
+        if ($componentType) {
+            $query->where('component_type', $componentType);
         }
 
         return $query->count();

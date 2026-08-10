@@ -21,11 +21,17 @@ class BloodRequestController extends Controller
         $hospital = auth()->user()->hospital;
         $search = trim((string) $request->query('q', ''));
         $bloodGroup = trim((string) $request->query('blood_group', ''));
+        $componentType = trim((string) $request->query('component_type', ''));
         $view = $request->query('view', 'incoming') === 'outgoing' ? 'outgoing' : 'incoming';
         $allowedGroups = config('tarrlok.blood_groups');
+        $allowedComponents = config('tarrlok.component_types');
 
         if ($bloodGroup !== '' && ! in_array($bloodGroup, $allowedGroups, true)) {
             $bloodGroup = '';
+        }
+
+        if ($componentType !== '' && ! array_key_exists($componentType, $allowedComponents)) {
+            $componentType = '';
         }
 
         $query = BloodRequest::query()
@@ -40,6 +46,7 @@ class BloodRequestController extends Controller
                 });
             })
             ->when($bloodGroup !== '', fn ($query) => $query->where('blood_group', $bloodGroup))
+            ->when($componentType !== '', fn ($query) => $query->where('component_type', $componentType))
             ->latest();
 
         if ($view === 'outgoing') {
@@ -88,7 +95,9 @@ class BloodRequestController extends Controller
             'requests' => $requests,
             'search' => $search,
             'bloodGroup' => $bloodGroup,
+            'componentType' => $componentType,
             'bloodGroups' => $allowedGroups,
+            'componentTypes' => $allowedComponents,
             'view' => $view,
             'availableByGroup' => $availableByGroup,
             'inventoryNote' => $hospital->availableUnitsCount(),
@@ -132,12 +141,14 @@ class BloodRequestController extends Controller
             'partners' => $partners,
             'selectedPartner' => $selectedPartner,
             'bloodGroups' => config('tarrlok.blood_groups'),
+            'componentTypes' => config('tarrlok.component_types'),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $hospital = auth()->user()->hospital;
+        $componentKeys = implode(',', array_keys(config('tarrlok.component_types')));
 
         $validated = $request->validate([
             'fulfilling_hospital_id' => [
@@ -147,6 +158,7 @@ class BloodRequestController extends Controller
                 Rule::notIn([$hospital->id]),
             ],
             'blood_group' => ['required', 'string', 'in:'.implode(',', config('tarrlok.blood_groups'))],
+            'component_type' => ['required', 'string', 'in:'.$componentKeys],
             'quantity' => ['required', 'integer', 'min:1', 'max:50'],
             'urgency' => ['required', 'in:emergency,routine'],
         ]);
@@ -161,6 +173,7 @@ class BloodRequestController extends Controller
             'requesting_hospital_id' => $hospital->id,
             'fulfilling_hospital_id' => $partner->id,
             'blood_group' => $validated['blood_group'],
+            'component_type' => $validated['component_type'],
             'quantity' => $validated['quantity'],
             'urgency' => $validated['urgency'],
             'status' => 'pending',
@@ -188,7 +201,7 @@ class BloodRequestController extends Controller
 
             return back()->withErrors([
                 'stock' => $bloodRequest->request_code.' cannot be approved: only '.$free.' free cleared '
-                    .$bloodRequest->blood_group.' unit(s) ('.$onHand.' on hand'
+                    .$bloodRequest->blood_group.' '.$bloodRequest->componentLabel().' unit(s) ('.$onHand.' on hand'
                     .($reserved > 0 ? ', '.$reserved.' already reserved by other approved requests' : '')
                     .'), but '.$bloodRequest->quantity.' were requested. Reject the request or wait until lab clears more stock.',
             ]);
@@ -203,7 +216,7 @@ class BloodRequestController extends Controller
             'rejected_at' => null,
         ]);
 
-        return back()->with('status', $bloodRequest->request_code.' approved ('.$free.' '.$bloodRequest->blood_group.' free). Issue units when ready.');
+        return back()->with('status', $bloodRequest->request_code.' approved ('.$free.' '.$bloodRequest->blood_group.' '.$bloodRequest->componentLabel().' free). Issue units when ready.');
     }
 
     public function reject(Request $request, BloodRequest $bloodRequest): RedirectResponse
@@ -220,7 +233,7 @@ class BloodRequestController extends Controller
 
         $defaultReason = $bloodRequest->hasSufficientStockAt(auth()->user()->hospital)
             ? 'Rejected by fulfilling hospital.'
-            : 'Insufficient cleared '.$bloodRequest->blood_group.' stock at fulfilling hospital.';
+            : 'Insufficient cleared '.$bloodRequest->blood_group.' '.$bloodRequest->componentLabel().' stock at fulfilling hospital.';
 
         $bloodRequest->update([
             'status' => 'rejected',
@@ -273,7 +286,7 @@ class BloodRequestController extends Controller
 
         if ($free < $bloodRequest->quantity) {
             return back()->withErrors([
-                'stock' => 'Not enough free cleared '.$bloodRequest->blood_group.' units (have '.$free.' free, need '.$bloodRequest->quantity.'). Reject or reverse other approvals first, or wait for lab stock.',
+                'stock' => 'Not enough free cleared '.$bloodRequest->blood_group.' '.$bloodRequest->componentLabel().' units (have '.$free.' free, need '.$bloodRequest->quantity.'). Reject or reverse other approvals first, or wait for lab stock.',
             ]);
         }
 
@@ -290,6 +303,7 @@ class BloodRequestController extends Controller
                 $units = BloodUnit::query()
                     ->where('hospital_id', $hospital->id)
                     ->where('blood_group', $bloodRequest->blood_group)
+                    ->where('component_type', $bloodRequest->component_type ?: 'whole_blood')
                     ->available()
                     ->orderBy('collected_at')
                     ->limit($bloodRequest->quantity)
@@ -340,7 +354,7 @@ class BloodRequestController extends Controller
         } catch (\RuntimeException $e) {
             if ($e->getMessage() === 'insufficient_stock') {
                 return back()->withErrors([
-                    'stock' => 'Not enough cleared '.$bloodRequest->blood_group.' units in inventory. Lab staff must register units and complete screening first.',
+                    'stock' => 'Not enough cleared '.$bloodRequest->blood_group.' '.$bloodRequest->componentLabel().' units in inventory. Lab staff must register units and complete screening first.',
                 ]);
             }
 

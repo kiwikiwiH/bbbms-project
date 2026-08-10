@@ -9,7 +9,7 @@
             <span class="material-symbols-outlined login-brand-glyph filled">bloodtype</span>
         </div>
         <h1 class="login-title" style="font-size:1.5rem;">{{ $unit->unit_code }}</h1>
-        <p class="login-subtitle">{{ $unit->blood_group }} · Collected {{ $unit->collected_at->format('M j, Y') }}</p>
+        <p class="login-subtitle">{{ $unit->blood_group }} · {{ $unit->componentLabel() }} · Collected {{ $unit->collected_at->format('M j, Y') }}</p>
     </div>
 
     @include('track.partials.unit-status', ['unit' => $unit])

@@ -3,6 +3,26 @@
 return [
     'blood_groups' => ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
 
+    /*
+    | Component labels on each bag (Phase 1: one registration = one bag).
+    | Shelf lives are simplified FYP constants, not full BB standards.
+    */
+    'component_types' => [
+        'whole_blood' => 'Whole Blood',
+        'red_blood_cells' => 'Red Blood Cells',
+        'fresh_frozen_plasma' => 'Fresh Frozen Plasma',
+        'platelets' => 'Platelets',
+        'cryoprecipitate' => 'Cryoprecipitate',
+    ],
+
+    'component_shelf_life_days' => [
+        'whole_blood' => 35,
+        'red_blood_cells' => 35,
+        'fresh_frozen_plasma' => 365,
+        'platelets' => 5,
+        'cryoprecipitate' => 365,
+    ],
+
     'screening_tests' => [
         'screening_hiv' => 'HIV',
         'screening_hep_b' => 'Hepatitis B',

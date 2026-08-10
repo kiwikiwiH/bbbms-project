@@ -56,14 +56,19 @@ class BloodUnitController extends Controller
     {
         return view('lab.units.create', [
             'bloodGroups' => config('tarrlok.blood_groups'),
+            'componentTypes' => config('tarrlok.component_types'),
+            'componentShelfLifeDays' => config('tarrlok.component_shelf_life_days'),
             'shelfLifeDays' => config('tarrlok.blood_shelf_life_days', 35),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $componentKeys = implode(',', array_keys(config('tarrlok.component_types')));
+
         $validated = $request->validate([
             'blood_group' => ['required', 'string', 'in:'.implode(',', config('tarrlok.blood_groups'))],
+            'component_type' => ['required', 'string', 'in:'.$componentKeys],
             'collected_at' => ['required', 'date', 'before_or_equal:today'],
             'donor_phone' => ['required', 'string', 'max:30'],
             'donor_name' => ['required', 'string', 'max:255'],
@@ -102,14 +107,15 @@ class BloodUnitController extends Controller
         }
 
         $collectedAt = $validated['collected_at'];
-        $expiresAt = BloodUnit::calculateExpiresAt($collectedAt);
-        $shelfLifeDays = (int) config('tarrlok.blood_shelf_life_days', 35);
+        $componentType = $validated['component_type'];
+        $expiresAt = BloodUnit::calculateExpiresAt($collectedAt, $componentType);
+        $shelfLifeDays = BloodUnit::shelfLifeDays($componentType);
 
         if ($expiresAt->isPast()) {
             return back()
                 ->withInput()
                 ->withErrors([
-                    'collected_at' => 'This collection date already exceeds the '.$shelfLifeDays.'-day shelf life. Enter a more recent collection date.',
+                    'collected_at' => 'This collection date already exceeds the '.$shelfLifeDays.'-day shelf life for this component. Enter a more recent collection date.',
                 ]);
         }
 
@@ -117,6 +123,7 @@ class BloodUnitController extends Controller
             'donor_id' => $donor->id,
             'unit_code' => BloodUnit::generateUnitCode($hospital->id),
             'blood_group' => $validated['blood_group'],
+            'component_type' => $componentType,
             'status' => 'quarantine',
             'screening_status' => 'pending',
             'recorded_by' => $user->id,
@@ -144,7 +151,7 @@ class BloodUnitController extends Controller
 
         return redirect()
             ->route('lab.units.screening.show', $unit)
-            ->with('status', 'Unit '.$unit->unit_code.' registered for donor '.$donor->donor_code.'. Print the donation slip for the donor. Complete the lab screening report.')
+            ->with('status', 'Unit '.$unit->unit_code.' ('.$unit->componentLabel().') registered for donor '.$donor->donor_code.'. Print the donation slip for the donor. Complete the lab screening report.')
             ->with('slip_unit', $unit->unit_code);
     }
 }

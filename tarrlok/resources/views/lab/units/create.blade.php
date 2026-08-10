@@ -68,9 +68,24 @@
                 </div>
             </fieldset>
 
+            <div class="hospital-field">
+                <label class="hospital-label" for="component_type">Component type</label>
+                <p class="hospital-field-hint">What product is in this bag (label on the blood bag).</p>
+                <select class="hospital-input" id="component_type" name="component_type" required>
+                    @foreach ($componentTypes as $key => $label)
+                        <option value="{{ $key }}" @selected(old('component_type', 'whole_blood') === $key)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
             <div class="hospital-field hospital-date-field">
                 <label class="hospital-label" for="collected_at">Collection date</label>
-                <p class="hospital-field-hint">Shelf life: {{ $shelfLifeDays }} days from collection (expiry set automatically).</p>
+                <p class="hospital-field-hint" id="shelf_life_hint">
+                    Shelf life for
+                    <strong id="shelf_life_component">{{ $componentTypes[old('component_type', 'whole_blood')] ?? 'Whole Blood' }}</strong>:
+                    <strong id="shelf_life_days">{{ $componentShelfLifeDays[old('component_type', 'whole_blood')] ?? $shelfLifeDays }}</strong>
+                    days from collection (expiry set automatically).
+                </p>
                 <div class="hospital-date-row">
                     <div class="hospital-input-wrap">
                         <span class="material-symbols-outlined hospital-input-icon" aria-hidden="true">calendar_today</span>
@@ -97,6 +112,22 @@
 
 @push('scripts')
 <script>
+    const shelfLifeDaysByComponent = @json($componentShelfLifeDays);
+    const componentLabels = @json($componentTypes);
+
+    function refreshShelfLifeHint() {
+        const select = document.getElementById('component_type');
+        if (!select) return;
+        const key = select.value;
+        const daysEl = document.getElementById('shelf_life_days');
+        const labelEl = document.getElementById('shelf_life_component');
+        if (daysEl) daysEl.textContent = shelfLifeDaysByComponent[key] ?? {{ (int) $shelfLifeDays }};
+        if (labelEl) labelEl.textContent = componentLabels[key] ?? key;
+    }
+
+    document.getElementById('component_type')?.addEventListener('change', refreshShelfLifeHint);
+    refreshShelfLifeHint();
+
     document.getElementById('collected_at_today')?.addEventListener('click', function () {
         const input = document.getElementById('collected_at');
         if (input) input.value = new Date().toISOString().slice(0, 10);

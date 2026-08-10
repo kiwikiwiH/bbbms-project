@@ -55,6 +55,10 @@
                     <dd><span class="hospital-blood-group">{{ $unit->blood_group }}</span></dd>
                 </div>
                 <div class="hospital-detail-item">
+                    <dt>Component</dt>
+                    <dd>{{ $unit->componentLabel() }}</dd>
+                </div>
+                <div class="hospital-detail-item">
                     <dt>Facility</dt>
                     <dd>{{ $unit->hospital->name }}</dd>
                 </div>

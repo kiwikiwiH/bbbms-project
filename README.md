@@ -13,7 +13,7 @@
 
 | Layer | Role |
 |-------|------|
-| **Laravel + MySQL** | Day-to-day operations — users, inventory, screening, partner requests, expiry |
+| **Laravel + MySQL** | Day-to-day operations — users, inventory, **component-labelled bags**, screening, partner requests, expiry |
 | **Solidity + Hardhat** | Tamper-evident audit log — registration, screening, partner issue |
 | **Shared ledger** | Role-scoped app access to the same chain (admin = full; hospital/lab = relevant units) |
 | **Trace / Track** | Staff: timeline + block/tx trail · Donors `/track`: status only |
@@ -346,16 +346,21 @@ Login redirects: **admin** → `/admin`, **hospital** → `/hospital`, **lab** �
 
 ```
 Lab registers unit       →  quarantine, screening: pending (donor linked by phone)
-                         →  expires_at set (35-day shelf life)
+                         →  component_type on bag (Whole Blood / RBC / FFP / Platelets / Cryo)
+                         →  expires_at from component shelf life (not one global number)
 Lab screening report     →  cleared → available  |  failed → discarded
 Hospital inventory       →  only cleared + available + not expired units count as stock
-Partner request          →  blood_requests: pending
-Partner approve + issue  →  FIFO; units transfer to requesting hospital
+Partner request          →  blood_group + component_type; pending
+Partner approve + issue  →  FIFO matching group **and** component; units transfer
 Trace unit (staff)       →  full timeline + Block N · tx trail
 Public /track (donor)    →  status timeline only (no raw hashes)
 Donor track (public)     →  /track + unit ID — donor-safe view, no patient data
 Daily expiry job         →  php artisan blood:mark-expired (also scheduled hourly)
 ```
+
+**Component types (Phase 1):** each registration is one labelled bag. Component is MySQL operational metadata (not on-chain yet). A future extension is one donation → multiple component bags.
+
+**Shelf life (FYP constants):** Whole Blood / RBC 35 days · Platelets 5 days · FFP / Cryoprecipitate 365 days.
 
 **Unit statuses:** `quarantine` → `available` (after screening) → transferred to partner as `available`, or `discarded`.
 
@@ -430,14 +435,14 @@ Example tunnel config: **[deploy/cloudflared-tesnet.xyz.example.yml](deploy/clou
 - [x] **Role-based blockchain visibility** — admin full trail + unit search (Block N · tx); hospital/lab scoped; donor status-only
 - [x] Integrity compare (MySQL vs `getUnit()`) and **blocked-attempt** log
 - [x] Admin blockchain dashboard — chain health, anchor stats, recent tx log, unit history search
-- [x] Hospital portal — inventory, requests, partners, lab staff, facility, trace
+- [x] **Component type** on bags and partner requests (Whole Blood / RBC / FFP / Platelets / Cryo; per-component shelf life)
 - [x] Lab portal — register units (donor phone lookup), screening, inventory
 - [x] Lab screening — quarantine → cleared/failed; only cleared units issuable
 - [x] Partner exchange + incoming/outgoing blood requests
 - [x] **Stock check before Approve** — insufficient blood type is flagged; Approve/Issue blocked until stock covers quantity
 - [x] **Reverse approval** — undo Approve before issue; cancel approved outgoing requests
 - [x] Request **audit log** (requested / approved / reversed / rejected / issued)
-- [x] Blood-type (and screening) **filters** on inventory and requests
+- [x] Blood-type, **component**, and screening **filters** on inventory and requests
 - [x] Simple hospital **analytics** charts (stock by group, request status, screening outcomes)
 - [x] Approve, reject (with reason), issue — FIFO, units transfer to requester
 - [x] Unit trace — lifecycle timeline + Block N · tx trail

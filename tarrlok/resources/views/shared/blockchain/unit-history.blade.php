@@ -37,6 +37,7 @@
                     <p class="ledger-trail-meta">
                         <strong>{{ $history['unit']->unit_code }}</strong>
                         · {{ $history['unit']->blood_group }}
+                        · {{ $history['unit']->componentLabel() }}
                         · {{ $history['unit']->hospital?->name }}
                         · {{ $history['unit']->stockStatusLabel() }}
                         <a href="{{ route('admin.trace.show', $history['unit']) }}">Open full trace</a>
