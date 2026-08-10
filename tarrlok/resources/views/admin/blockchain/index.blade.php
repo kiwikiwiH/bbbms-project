@@ -18,7 +18,7 @@
 @endphp
 
 <h1 class="admin-heading">Blockchain audit trail</h1>
-<p class="admin-subheading">Live visual status of the local chain and on-chain anchors for blood unit events.</p>
+<p class="admin-subheading">Full-network chain health, unit history search with block numbers, and integrity monitoring.</p>
 
 {{-- Health banner --}}
 <div class="admin-blockchain-health admin-blockchain-health-{{ $health }}">
@@ -156,15 +156,15 @@
         </article>
     </div>
 
-    @if ($chain['contractAddress'] || $chain['signerAddress'])
+    @if (($chain['contractAddress'] ?? null) || ($chain['signerAddress'] ?? null))
         <div class="bc-address-row">
-            @if ($chain['contractAddress'])
+            @if (! empty($chain['contractAddress']))
                 <div class="bc-address">
                     <span>Contract</span>
                     <code title="{{ $chain['contractAddress'] }}">{{ $chain['contractAddress'] }}</code>
                 </div>
             @endif
-            @if ($chain['signerAddress'])
+            @if (! empty($chain['signerAddress']))
                 <div class="bc-address">
                     <span>Signer</span>
                     <code title="{{ $chain['signerAddress'] }}">{{ $chain['signerAddress'] }}</code>
@@ -336,6 +336,8 @@
         @endif
     @endif
 </section>
+
+@include('shared.blockchain.unit-history')
 
 @include('shared.blockchain.ledger')
 @endsection

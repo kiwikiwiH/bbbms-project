@@ -94,7 +94,7 @@
     </a>
     <a href="{{ route('lab.blockchain') }}" class="hospital-btn hospital-btn-outline">
         <span class="material-symbols-outlined">hub</span>
-        Network ledger
+        Facility ledger
     </a>
 </div>
 @endsection

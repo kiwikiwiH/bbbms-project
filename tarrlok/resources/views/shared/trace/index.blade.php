@@ -164,7 +164,7 @@
                 </div>
             @endif
 
-            @if ($unit->blockchain_register_tx || $unit->blockchain_screening_tx || $unit->blockchain_issue_tx)
+            @if ($unit->blockchain_register_tx || $unit->blockchain_screening_tx || $unit->blockchain_issue_tx || ! empty($chainHistory['events'] ?? null))
                 <div class="trace-blockchain-panel">
                     <h3 class="screening-report-heading">Blockchain audit trail</h3>
                     @if (! empty($integrity))
@@ -188,26 +188,45 @@
                             </div>
                         </div>
                     @endif
-                    <dl class="hospital-detail-grid">
-                        @if ($unit->blockchain_register_tx)
-                            <div class="hospital-detail-item">
-                                <dt>Registration tx</dt>
-                                <dd>@include('shared.partials.blockchain-tx', ['hash' => $unit->blockchain_register_tx])</dd>
-                            </div>
-                        @endif
-                        @if ($unit->blockchain_screening_tx)
-                            <div class="hospital-detail-item">
-                                <dt>Screening tx</dt>
-                                <dd>@include('shared.partials.blockchain-tx', ['hash' => $unit->blockchain_screening_tx])</dd>
-                            </div>
-                        @endif
-                        @if ($unit->blockchain_issue_tx)
-                            <div class="hospital-detail-item">
-                                <dt>Partner issue tx</dt>
-                                <dd>@include('shared.partials.blockchain-tx', ['hash' => $unit->blockchain_issue_tx])</dd>
-                            </div>
-                        @endif
-                    </dl>
+
+                    @if (! empty($chainHistory['events'] ?? null))
+                        <ol class="ledger-trail-steps" style="margin:16px 0 0;">
+                            @foreach ($chainHistory['events'] as $event)
+                                <li>
+                                    <strong>{{ $event['label'] ?? $event['name'] }}</strong>
+                                    <span>
+                                        @if (! empty($event['blockNumber']))
+                                            Block {{ $event['blockNumber'] }}
+                                        @endif
+                                        @if (! empty($event['txHash']))
+                                            · tx <code title="{{ $event['txHash'] }}">{{ \Illuminate\Support\Str::limit($event['txHash'], 18, '…') }}</code>
+                                        @endif
+                                    </span>
+                                </li>
+                            @endforeach
+                        </ol>
+                    @else
+                        <dl class="hospital-detail-grid">
+                            @if ($unit->blockchain_register_tx)
+                                <div class="hospital-detail-item">
+                                    <dt>Registration tx</dt>
+                                    <dd>@include('shared.partials.blockchain-tx', ['hash' => $unit->blockchain_register_tx])</dd>
+                                </div>
+                            @endif
+                            @if ($unit->blockchain_screening_tx)
+                                <div class="hospital-detail-item">
+                                    <dt>Screening tx</dt>
+                                    <dd>@include('shared.partials.blockchain-tx', ['hash' => $unit->blockchain_screening_tx])</dd>
+                                </div>
+                            @endif
+                            @if ($unit->blockchain_issue_tx)
+                                <div class="hospital-detail-item">
+                                    <dt>Partner issue tx</dt>
+                                    <dd>@include('shared.partials.blockchain-tx', ['hash' => $unit->blockchain_issue_tx])</dd>
+                                </div>
+                            @endif
+                        </dl>
+                    @endif
                 </div>
             @else
                 <p class="hospital-flow-note" style="margin-top:20px;">

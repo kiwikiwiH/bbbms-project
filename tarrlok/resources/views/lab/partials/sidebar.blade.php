@@ -36,9 +36,9 @@
             <span class="material-symbols-outlined">timeline</span>
             <span>Trace Unit</span>
         </a>
-        <a href="{{ route('lab.blockchain') }}" @class(['active' => $route === 'lab.blockchain']) title="Network ledger">
+        <a href="{{ route('lab.blockchain') }}" @class(['active' => $route === 'lab.blockchain']) title="Facility ledger">
             <span class="material-symbols-outlined">hub</span>
-            <span>Network ledger</span>
+            <span>Facility ledger</span>
         </a>
     </nav>
 

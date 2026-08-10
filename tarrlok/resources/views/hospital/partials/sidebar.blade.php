@@ -40,9 +40,9 @@
             <span class="material-symbols-outlined">timeline</span>
             <span>Trace Unit</span>
         </a>
-        <a href="{{ route('hospital.blockchain') }}" @class(['active' => $route === 'hospital.blockchain']) title="Network ledger">
+        <a href="{{ route('hospital.blockchain') }}" @class(['active' => $route === 'hospital.blockchain']) title="Unit audit trail">
             <span class="material-symbols-outlined">hub</span>
-            <span>Network ledger</span>
+            <span>Unit audit trail</span>
         </a>
         <a href="{{ route('hospital.facility') }}" @class(['active' => $route === 'hospital.facility']) title="Facility Profile">
             <span class="material-symbols-outlined">local_hospital</span>

@@ -53,7 +53,7 @@ BLOCKCHAIN_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7
 php artisan config:clear
 ```
 
-Verify: sign in as admin, hospital, or lab → **Blockchain / Network ledger**. Every portal reads the same on-chain event log, integrity alerts, and blocked attempts.
+Verify: sign in as admin → full blockchain audit + unit search; hospital → **Unit audit trail**; lab → **Facility ledger**. Donors use `/track` for status only.
 
 Details: [blockchain/README.md](../blockchain/README.md)
 

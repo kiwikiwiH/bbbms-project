@@ -1,12 +1,26 @@
 @php
     $traceRoute = $traceRoute ?? 'hospital.trace';
     $traceShowRoute = $traceShowRoute ?? 'hospital.trace.show';
+    $visibility = $visibility ?? 'full';
+    $scopeLabel = $scopeLabel ?? 'Shared ledger';
+    $showTechnical = $showTechnical ?? ($visibility === 'full');
+    $activityTitle = match ($visibility) {
+        'full' => 'Network activity',
+        'lab' => 'Facility activity',
+        default => 'Your unit activity',
+    };
 @endphp
 
 <section class="ledger-shell">
     <p class="ledger-intro">
-        Every hospital, lab, and admin portal reads this shared ledger. MySQL can still be edited;
-        the chain cannot. A mismatch means the operational record no longer matches what was anchored.
+        @if ($visibility === 'full')
+            Full network audit trail for administrators. MySQL can still be edited; the chain cannot.
+            Search a unit below to walk its block-by-block history.
+        @elseif ($visibility === 'lab')
+            {{ $scopeLabel }}. You see on-chain history for this facility’s units — not every hospital on the network.
+        @else
+            {{ $scopeLabel }}. Status-focused history for units you requested, hold, or issued. Compact verification only.
+        @endif
     </p>
 
     @if (! empty($ledgerError) && ! $ledgerOk)
@@ -21,8 +35,18 @@
         <div class="ledger-banner is-ok">
             <span class="material-symbols-outlined">verified</span>
             <div>
-                <strong>Shared ledger is live</strong>
-                <p>{{ count($events) }} on-chain event{{ count($events) === 1 ? '' : 's' }} visible to every stakeholder portal.</p>
+                <strong>{{ $visibility === 'full' ? 'Shared ledger is live' : 'Scoped audit trail is live' }}</strong>
+                <p>
+                    {{ count($events) }} on-chain event{{ count($events) === 1 ? '' : 's' }}
+                    @if ($visibility === 'full')
+                        across the network
+                    @else
+                        in your scope
+                        @if (($totalEvents ?? count($events)) > count($events))
+                            (filtered from {{ $totalEvents }} network-wide)
+                        @endif
+                    @endif.
+                </p>
             </div>
         </div>
     @endif
@@ -30,7 +54,7 @@
     <div class="ledger-grid">
         <article class="ledger-panel">
             <header>
-                <h2>Network activity</h2>
+                <h2>{{ $activityTitle }}</h2>
                 <span>{{ count($events) }}</span>
             </header>
             @forelse ($events as $event)
@@ -54,12 +78,17 @@
                             · {{ $event['fromHospitalName'] ?? '—' }} → {{ $event['toHospitalName'] ?? '—' }}
                         @endif
                     </p>
-                    @if (! empty($event['txHash']))
-                        <code class="ledger-hash" title="{{ $event['txHash'] }}">{{ \Illuminate\Support\Str::limit($event['txHash'], 22, '…') }}</code>
-                    @endif
+                    <div class="ledger-meta-line">
+                        @if (! empty($event['blockNumber']))
+                            <span class="ledger-block">Block {{ $event['blockNumber'] }}</span>
+                        @endif
+                        @if (! empty($event['txHash']))
+                            <code class="ledger-hash" title="{{ $event['txHash'] }}">{{ \Illuminate\Support\Str::limit($event['txHash'], $showTechnical ? 22 : 14, '…') }}</code>
+                        @endif
+                    </div>
                 </div>
             @empty
-                <p class="ledger-empty">No on-chain events yet. Register or screen a unit while the local chain is running.</p>
+                <p class="ledger-empty">No on-chain events in this scope yet. Register or screen a unit while the local chain is running.</p>
             @endforelse
         </article>
 
@@ -88,13 +117,13 @@
                     @endif
                 </div>
             @empty
-                <p class="ledger-empty">No DB-vs-chain mismatches on the units checked.</p>
+                <p class="ledger-empty">No DB-vs-chain mismatches on the units checked in this scope.</p>
             @endforelse
         </article>
 
         <article class="ledger-panel">
             <header>
-                <h2>Blocked attempts</h2>
+                <h2>{{ $visibility === 'full' ? 'Blocked attempts' : 'Blocked attempts (your facility)' }}</h2>
                 <span>{{ $attempts->count() }}</span>
             </header>
             @forelse ($attempts as $attempt)
@@ -113,7 +142,7 @@
                             · <code>{{ $attempt->unit_code }}</code>
                         @endif
                     </p>
-                    <p class="ledger-note" title="{{ $attempt->reason }}">{{ \Illuminate\Support\Str::limit($attempt->reason, 180) }}</p>
+                    <p class="ledger-note" title="{{ $attempt->reason }}">{{ \Illuminate\Support\Str::limit($attempt->reason, $showTechnical ? 180 : 100) }}</p>
                 </div>
             @empty
                 <p class="ledger-empty">No blocked chain writes yet. Invalid transitions (double screen, expired issue, etc.) appear here.</p>

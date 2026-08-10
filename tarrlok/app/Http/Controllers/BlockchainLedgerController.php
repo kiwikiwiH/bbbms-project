@@ -3,22 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Services\BlockchainLedgerService;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class BlockchainLedgerController extends Controller
 {
-    public function __invoke(BlockchainLedgerService $ledger): View
+    public function __invoke(Request $request, BlockchainLedgerService $ledger): View
     {
+        $snapshot = $ledger->snapshot(auth()->user(), (string) $request->query('unit', ''));
+
         return view('shared.blockchain.index', [
-            ...$ledger->snapshot(),
-            'portal' => $this->portalContext(),
+            ...$snapshot,
+            'portal' => $this->portalContext($snapshot['visibility']),
         ]);
     }
 
     /**
-     * @return array{layout: string, dashboardRoute: string, traceRoute: string, traceShowRoute: string, title: string}
+     * @return array{layout: string, dashboardRoute: string, traceRoute: string, traceShowRoute: string, title: string, subtitle: string}
      */
-    private function portalContext(): array
+    private function portalContext(string $visibility): array
     {
         $user = auth()->user();
 
@@ -29,6 +32,7 @@ class BlockchainLedgerController extends Controller
                 'traceRoute' => 'admin.trace',
                 'traceShowRoute' => 'admin.trace.show',
                 'title' => 'Shared ledger',
+                'subtitle' => 'Full network audit trail with block numbers and integrity checks',
             ];
         }
 
@@ -38,7 +42,8 @@ class BlockchainLedgerController extends Controller
                 'dashboardRoute' => 'lab.dashboard',
                 'traceRoute' => 'lab.trace',
                 'traceShowRoute' => 'lab.trace.show',
-                'title' => 'Network ledger',
+                'title' => 'Facility ledger',
+                'subtitle' => 'On-chain history for units your laboratory handles — not the full network dump',
             ];
         }
 
@@ -47,7 +52,8 @@ class BlockchainLedgerController extends Controller
             'dashboardRoute' => 'hospital.dashboard',
             'traceRoute' => 'hospital.trace',
             'traceShowRoute' => 'hospital.trace.show',
-            'title' => 'Network ledger',
+            'title' => 'Unit audit trail',
+            'subtitle' => 'Status history for units your hospital requested, holds, or issued',
         ];
     }
 }

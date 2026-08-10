@@ -4,15 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\BloodUnit;
 use App\Services\BlockchainIntegrityService;
+use App\Services\BlockchainLedgerService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class BloodUnitTraceController extends Controller
 {
-    public function index(Request $request, BlockchainIntegrityService $integrity): View
+    public function index(Request $request, BlockchainIntegrityService $integrity, BlockchainLedgerService $ledger): View
     {
-        $query = trim((string) $request->query('q', ''));
+        $query = strtoupper(trim((string) $request->query('q', '')));
         $unit = null;
+        $chainHistory = null;
 
         if ($query !== '') {
             $unit = BloodUnit::query()
@@ -25,19 +27,28 @@ class BloodUnitTraceController extends Controller
                 ])
                 ->where('unit_code', $query)
                 ->first();
+
+            if ($unit && $this->canViewUnit($unit)) {
+                $chainHistory = $ledger->historyForUnit($unit->unit_code);
+            } elseif ($unit && ! $this->canViewUnit($unit)) {
+                $unit = null;
+            }
         }
 
         return view('shared.trace.index', [
             'query' => $query,
             'unit' => $unit,
             'integrity' => $unit ? $integrity->verify($unit) : null,
+            'chainHistory' => $chainHistory,
             'screeningTests' => config('tarrlok.screening_tests'),
             'portal' => $this->portalContext(),
         ]);
     }
 
-    public function show(BloodUnit $bloodUnit, BlockchainIntegrityService $integrity): View
+    public function show(BloodUnit $bloodUnit, BlockchainIntegrityService $integrity, BlockchainLedgerService $ledger): View
     {
+        abort_unless($this->canViewUnit($bloodUnit), 404);
+
         $bloodUnit->load([
             'hospital',
             'recorder',
@@ -50,11 +61,43 @@ class BloodUnitTraceController extends Controller
             'query' => $bloodUnit->unit_code,
             'unit' => $bloodUnit,
             'integrity' => $integrity->verify($bloodUnit),
+            'chainHistory' => $ledger->historyForUnit($bloodUnit->unit_code),
             'screeningTests' => config('tarrlok.screening_tests'),
             'portal' => $this->portalContext(),
         ]);
     }
 
+    private function canViewUnit(BloodUnit $unit): bool
+    {
+        $user = auth()->user();
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        if (! $user->hospital_id) {
+            return false;
+        }
+
+        if ((int) $unit->hospital_id === (int) $user->hospital_id) {
+            return true;
+        }
+
+        if ($user->isLab()) {
+            return false;
+        }
+
+        return $unit->bloodRequests()
+            ->where(function ($q) use ($user) {
+                $q->where('requesting_hospital_id', $user->hospital_id)
+                    ->orWhere('fulfilling_hospital_id', $user->hospital_id);
+            })
+            ->exists();
+    }
+
+    /**
+     * @return array{layout: string, dashboardRoute: string, traceRoute: string, traceShowRoute: string}
+     */
     private function portalContext(): array
     {
         $user = auth()->user();

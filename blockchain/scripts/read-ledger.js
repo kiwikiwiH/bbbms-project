@@ -39,7 +39,7 @@ function mapEvent(log) {
     actorId: toNumber(args.actorId),
     actorName: args.actorName,
     txHash: log.transactionHash,
-    blockNumber: log.blockNumber,
+    blockNumber: toNumber(log.blockNumber),
     timestamp: toNumber(args.timestamp),
   };
 

@@ -7,12 +7,12 @@
 @section('title', $portal['title'].' - Tarrlok')
 
 @section('page_title', $portal['title'])
-@section('page_subtitle', 'The same on-chain log, integrity alerts, and blocked attempts every stakeholder can see')
+@section('page_subtitle', $portal['subtitle'] ?? 'Role-scoped audit trail for units you work with')
 
 @section('content')
 @if (($portal['layout'] ?? '') === 'layouts.tarrlok-admin')
     <h1 class="admin-heading">{{ $portal['title'] }}</h1>
-    <p class="admin-subheading">The same on-chain log, integrity alerts, and blocked attempts every stakeholder can see.</p>
+    <p class="admin-subheading">{{ $portal['subtitle'] }}</p>
 @endif
 
 @include('shared.blockchain.ledger', [

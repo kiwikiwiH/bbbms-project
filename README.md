@@ -15,10 +15,10 @@
 |-------|------|
 | **Laravel + MySQL** | Day-to-day operations — users, inventory, screening, partner requests, expiry |
 | **Solidity + Hardhat** | Tamper-evident audit log — registration, screening, partner issue |
-| **Shared ledger** | Same on-chain events + integrity alerts + blocked attempts on every portal |
-| **Trace / Track** | Staff timeline and public `/track` by unit code (consent required) |
+| **Shared ledger** | Role-scoped app access to the same chain (admin = full; hospital/lab = relevant units) |
+| **Trace / Track** | Staff: timeline + block/tx trail · Donors `/track`: status only |
 
-MySQL is the **operational database**. The blockchain is an **audit trail** — events cannot be altered once mined. Stakeholders are consortium **readers** of one local chain, not separate hospital nodes.
+MySQL is the **operational database**. The blockchain is an **audit trail** — events cannot be altered once mined. Portals share **one** local chain; **who sees which events** is role-based in the app (not “only admin can access the blockchain”).
 
 ---
 
@@ -63,7 +63,7 @@ Laravel (controllers + services)
 | Screening cleared/failed | `recordScreening()` | `UnitScreened` |
 | Partner issue | `recordIssue()` | `UnitIssued` |
 
-Transaction hashes are saved on `blood_units` and shown on **Trace Unit**, **public `/track`**, and the **shared ledger** (`/admin/blockchain`, `/hospital/blockchain`, `/lab/blockchain`). Those portals also compare MySQL to on-chain `getUnit()` state and list blocked write attempts in `blockchain_tamper_attempts`.
+Events include **block numbers** and tx hashes. Admin sees the full network + unit history search. Hospital and lab see scoped history for units they handle. Public `/track` shows **status only** (no raw hash dump). Staff **Trace Unit** shows the block/event trail. Portals also compare MySQL to on-chain `getUnit()` and list blocked writes in `blockchain_tamper_attempts`.
 
 ---
 
@@ -298,7 +298,7 @@ Sync after changes: `php artisan db:seed --class=AdminSeeder`
 | URL | Purpose |
 |-----|---------|
 | `/admin` | Overview & pending registrations |
-| `/admin/blockchain` | **Chain health**, shared ledger, integrity alerts, blocked attempts |
+| `/admin/blockchain` | **Full audit trail**, chain health, **unit history search** (Block N · tx), integrity, blocked attempts |
 | `/admin/registrations` | List / filter hospital registrations |
 | `/admin/registrations/{hospital}` | Approve or reject a facility |
 
@@ -312,7 +312,7 @@ Sync after changes: `php artisan db:seed --class=AdminSeeder`
 | `/hospital/requests/create` | Request blood from a partner |
 | `/hospital/partners` | Browse approved partner hospitals |
 | `/hospital/trace` | Trace a unit by ID |
-| `/hospital/blockchain` | **Network ledger** — same events / integrity / blocked attempts |
+| `/hospital/blockchain` | **Unit audit trail** — scoped to units requested / held / issued |
 | `/hospital/facility` | Facility profile |
 | `/hospital/lab-staff` | Manage lab staff accounts |
 
@@ -325,7 +325,7 @@ Sync after changes: `php artisan db:seed --class=AdminSeeder`
 | `/lab/units/create` | Register unit + link donor by phone |
 | `/lab/units/{unit}/screening` | Lab screening report |
 | `/lab/trace` | Trace a unit by ID |
-| `/lab/blockchain` | **Network ledger** — same events / integrity / blocked attempts |
+| `/lab/blockchain` | **Facility ledger** — scoped to units at this hospital |
 
 ---
 
@@ -351,7 +351,8 @@ Lab screening report     →  cleared → available  |  failed → discarded
 Hospital inventory       →  only cleared + available + not expired units count as stock
 Partner request          →  blood_requests: pending
 Partner approve + issue  →  FIFO; units transfer to requesting hospital
-Trace unit (staff)       →  full timeline + blockchain tx hashes
+Trace unit (staff)       →  full timeline + Block N · tx trail
+Public /track (donor)    →  status timeline only (no raw hashes)
 Donor track (public)     →  /track + unit ID — donor-safe view, no patient data
 Daily expiry job         →  php artisan blood:mark-expired (also scheduled hourly)
 ```
@@ -375,18 +376,20 @@ Requires blockchain terminals + web server running.
 3. **Korle Bu admin** — **Partner Exchange** → request O+ from Ridge Hospital
 4. **Ridge admin** — **Blood Requests → Incoming** → Approve → **Issue unit**
 5. **Korle Bu admin** — **Blood Inventory** — units received
-6. **Public** — `/track` → `UNIT-002-00001` — timeline + blockchain hashes
-7. **Either hospital or lab** — **Trace Unit** — staff view of same unit
-8. **Admin, hospital, and lab** — **Network ledger** — same events on every portal
+6. **Public** — `/track` → `UNIT-002-00001` — status timeline (no raw hashes)
+7. **Either hospital or lab** — **Trace Unit** — staff view with Block N · tx
+8. **Admin** — `/admin/blockchain?unit=…` — full network + unit history search; hospital/lab see **scoped** ledgers
 9. **Tamper demo** — second screening is blocked on-chain and appears under **Blocked attempts**; editing a unit blood group in MySQL after anchoring shows a **Tampered** integrity alert while the chain keeps the original group
 
 ### Verify blockchain is working
 
 | Check | Expected |
 |-------|----------|
-| Admin → Blockchain | Status **healthy**, block number, contract address |
-| Hospital / lab → Network ledger | Same event log + integrity + blocked attempts |
-| Trace / Track page | “Blockchain verification” with `0x…` hashes |
+| Admin → Blockchain | Status **healthy**, unit search shows **Block N · tx** |
+| Hospital → Unit audit trail | Only units this hospital requested / holds / issued |
+| Lab → Facility ledger | Only this facility’s units |
+| Trace (staff) | Block/event trail + integrity |
+| Track (donor) | Status timeline; no raw hash dump |
 | Hardhat node terminal | New mined transactions on register/screen/issue |
 | `blood_units` table | `blockchain_register_tx`, `blockchain_screening_tx`, `blockchain_issue_tx` populated |
 | `blockchain_tamper_attempts` | Failed / reverted writes attributed to the signed-in user |
@@ -424,9 +427,9 @@ Example tunnel config: **[deploy/cloudflared-tesnet.xyz.example.yml](deploy/clou
 - [x] 3-step hospital registration (Ghana regions, HeFRA license)
 - [x] Platform admin — approve / reject registrations
 - [x] Platform admin — **revoke access** for long-approved hospitals (suspends staff, closes open requests, email notice)
-- [x] **Shared blockchain ledger** on admin, hospital, and lab portals
+- [x] **Role-based blockchain visibility** — admin full trail + unit search (Block N · tx); hospital/lab scoped; donor status-only
 - [x] Integrity compare (MySQL vs `getUnit()`) and **blocked-attempt** log
-- [x] Admin blockchain dashboard — chain health, anchor stats, recent tx log
+- [x] Admin blockchain dashboard — chain health, anchor stats, recent tx log, unit history search
 - [x] Hospital portal — inventory, requests, partners, lab staff, facility, trace
 - [x] Lab portal — register units (donor phone lookup), screening, inventory
 - [x] Lab screening — quarantine → cleared/failed; only cleared units issuable
@@ -437,8 +440,8 @@ Example tunnel config: **[deploy/cloudflared-tesnet.xyz.example.yml](deploy/clou
 - [x] Blood-type (and screening) **filters** on inventory and requests
 - [x] Simple hospital **analytics** charts (stock by group, request status, screening outcomes)
 - [x] Approve, reject (with reason), issue — FIFO, units transfer to requester
-- [x] Unit trace — lifecycle timeline + blockchain tx hashes
-- [x] **Public donor tracking** — `/track` by unit ID (one unit, no login, consent)
+- [x] Unit trace — lifecycle timeline + Block N · tx trail
+- [x] **Public donor tracking** — `/track` status timeline only (no raw hash dump; consent required)
 - [x] Blood expiry — shelf-life, dashboard alerts, `blood:mark-expired` command
 - [x] Blockchain audit log (`BloodBank.sol` + `BlockchainService`)
 - [x] Demo seeder — Korle Bu + Ridge with sample inventory

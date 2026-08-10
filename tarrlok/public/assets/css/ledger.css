@@ -168,6 +168,93 @@
   word-break: break-all;
 }
 
+.ledger-meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.ledger-block {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #f3f4f6;
+  color: #374151;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ledger-search-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.ledger-search-form input {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font: inherit;
+}
+
+.ledger-unit-search {
+  margin-top: 24px;
+}
+
+.ledger-trail-meta {
+  margin: 0 0 12px;
+  color: #555f6f;
+  font-size: 14px;
+}
+
+.ledger-trail-meta a {
+  margin-left: 8px;
+  color: #a20513;
+}
+
+.ledger-trail-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ledger-trail-steps li {
+  position: relative;
+  padding: 12px 0 12px 22px;
+  border-top: 1px solid #eef0f3;
+}
+
+.ledger-trail-steps li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 18px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #a20513;
+}
+
+.ledger-trail-steps strong {
+  display: block;
+  font-size: 14px;
+}
+
+.ledger-trail-steps span,
+.ledger-trail-steps em {
+  display: block;
+  margin-top: 4px;
+  color: #555f6f;
+  font-size: 13px;
+  font-style: normal;
+}
+
 .ledger-badge {
   display: inline-flex;
   align-items: center;

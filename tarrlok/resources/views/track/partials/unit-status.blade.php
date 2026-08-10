@@ -88,28 +88,12 @@
         </ol>
 
         @if ($unit->blockchain_register_tx || $unit->blockchain_screening_tx || $unit->blockchain_issue_tx)
-            <div class="trace-blockchain-panel">
-                <h3 class="screening-report-heading">Blockchain verification</h3>
-                <dl class="hospital-detail-grid">
-                    @if ($unit->blockchain_register_tx)
-                        <div class="hospital-detail-item">
-                            <dt>Registration</dt>
-                            <dd>@include('shared.partials.blockchain-tx', ['hash' => $unit->blockchain_register_tx])</dd>
-                        </div>
-                    @endif
-                    @if ($unit->blockchain_screening_tx)
-                        <div class="hospital-detail-item">
-                            <dt>Screening</dt>
-                            <dd>@include('shared.partials.blockchain-tx', ['hash' => $unit->blockchain_screening_tx])</dd>
-                        </div>
-                    @endif
-                    @if ($unit->blockchain_issue_tx)
-                        <div class="hospital-detail-item">
-                            <dt>Partner transfer</dt>
-                            <dd>@include('shared.partials.blockchain-tx', ['hash' => $unit->blockchain_issue_tx])</dd>
-                        </div>
-                    @endif
-                </dl>
+            <div class="trace-blockchain-panel track-verified-note">
+                <h3 class="screening-report-heading">Network verification</h3>
+                <p style="margin:0;font-size:14px;color:#555f6f;line-height:1.5;">
+                    Key steps for this donation are recorded on Tarrlok’s shared audit trail.
+                    Hospital and lab staff can verify the technical record; donors see status only.
+                </p>
             </div>
         @endif
     </div>
