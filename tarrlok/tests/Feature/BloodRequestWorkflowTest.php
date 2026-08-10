@@ -99,6 +99,22 @@ class BloodRequestWorkflowTest extends TestCase
         $this->assertSame('pending', $second->fresh()->status);
     }
 
+    public function test_outgoing_cancel_works_without_rejection_reason_field(): void
+    {
+        [$supplier, $requester] = $this->twoHospitals();
+        $request = $this->makeRequest($requester['hospital'], $supplier['hospital'], 'AB+', 1);
+
+        $this->actingAs($requester['user'])
+            ->post(route('hospital.requests.cancel', $request))
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $request->refresh();
+        $this->assertSame('rejected', $request->status);
+        $this->assertSame('Cancelled by requesting hospital.', $request->rejection_reason);
+        $this->assertSame($requester['user']->id, $request->rejected_by);
+    }
+
     public function test_blood_group_filter_on_requests_and_inventory(): void
     {
         [$supplier, $requester] = $this->twoHospitals();

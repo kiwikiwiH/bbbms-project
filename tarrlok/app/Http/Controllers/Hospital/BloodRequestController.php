@@ -224,7 +224,7 @@ class BloodRequestController extends Controller
 
         $bloodRequest->update([
             'status' => 'rejected',
-            'rejection_reason' => $validated['rejection_reason'] ?: $defaultReason,
+            'rejection_reason' => ($validated['rejection_reason'] ?? null) ?: $defaultReason,
             'rejected_by' => auth()->id(),
             'rejected_at' => now(),
             'approved_by' => $bloodRequest->approved_by,
@@ -250,7 +250,7 @@ class BloodRequestController extends Controller
             'status' => 'pending',
             'reversed_by' => auth()->id(),
             'reversed_at' => now(),
-            'reverse_reason' => $validated['reverse_reason'] ?: 'Approval reversed before issue.',
+            'reverse_reason' => ($validated['reverse_reason'] ?? null) ?: 'Approval reversed before issue.',
         ]);
 
         return back()->with('status', $bloodRequest->request_code.' reversed to pending. You can approve again when stock is ready, or reject.');
@@ -375,7 +375,7 @@ class BloodRequestController extends Controller
 
         $bloodRequest->update([
             'status' => 'rejected',
-            'rejection_reason' => $validated['rejection_reason'] ?: 'Cancelled by requesting hospital.',
+            'rejection_reason' => ($validated['rejection_reason'] ?? null) ?: 'Cancelled by requesting hospital.',
             'rejected_by' => auth()->id(),
             'rejected_at' => now(),
         ]);
