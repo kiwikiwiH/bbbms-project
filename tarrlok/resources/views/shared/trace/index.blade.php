@@ -72,6 +72,17 @@
                 </div>
             </dl>
 
+            @include('shared.partials.unit-qr', [
+                'unit' => $unit,
+                'qrDataUri' => $qrDataUri ?? null,
+                'trackUrl' => $trackUrl ?? null,
+                'qrSize' => 148,
+                'qrCaption' => 'Public track QR — same code printed on the bag label',
+                'printBagLabelRoute' => auth()->user()?->isLab()
+                    ? route('lab.units.bag-label', $unit)
+                    : null,
+            ])
+
             <h3 class="screening-report-heading">Lifecycle timeline</h3>
             <ol class="trace-timeline">
                 <li class="trace-timeline-item done">

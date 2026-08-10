@@ -12,6 +12,14 @@
         <p class="login-subtitle">{{ $unit->blood_group }} · {{ $unit->componentLabel() }} · Collected {{ $unit->collected_at->format('M j, Y') }}</p>
     </div>
 
+    @include('shared.partials.unit-qr', [
+        'unit' => $unit,
+        'qrDataUri' => $qrDataUri,
+        'trackUrl' => $trackUrl,
+        'qrSize' => 160,
+        'qrCaption' => 'Scan this QR anytime to return to this tracking page',
+    ])
+
     @include('track.partials.unit-status', ['unit' => $unit])
 
     <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
@@ -27,5 +35,6 @@
 <style>
     .track-show-shell .hospital-card { text-align: left; }
     .track-show-shell .hospital-btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+    .track-show-shell .unit-qr-panel { margin-bottom: 16px; }
 </style>
 @endpush

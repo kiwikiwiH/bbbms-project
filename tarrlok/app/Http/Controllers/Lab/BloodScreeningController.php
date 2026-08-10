@@ -6,23 +6,27 @@ use App\Http\Controllers\Controller;
 use App\Models\BloodUnit;
 use App\Services\BlockchainService;
 use App\Services\DonorNotificationService;
+use App\Services\QrCodeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class BloodScreeningController extends Controller
 {
-    public function show(BloodUnit $bloodUnit): View
+    public function show(BloodUnit $bloodUnit, QrCodeService $qr): View
     {
         $this->ensureUnit($bloodUnit);
 
         $bloodUnit->load(['recorder', 'screener']);
+        $trackUrl = route('track.show', $bloodUnit, absolute: true);
 
         return view('lab.units.screening', [
             'unit' => $bloodUnit,
             'hospital' => auth()->user()->hospital,
             'screeningTests' => config('tarrlok.screening_tests'),
             'readOnly' => $bloodUnit->screening_status !== 'pending',
+            'trackUrl' => $trackUrl,
+            'qrDataUri' => $qr->pngDataUri($trackUrl, 140),
         ]);
     }
 

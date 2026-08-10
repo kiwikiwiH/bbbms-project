@@ -53,9 +53,9 @@ BLOCKCHAIN_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7
 php artisan config:clear
 ```
 
-Verify: sign in as admin → full blockchain audit + unit search; hospital → **Unit audit trail**; lab → **Facility ledger**. Donors use `/track` for status only. Lab register sets **component type** (shelf life varies by component).
+Verify: sign in as admin → full blockchain audit + unit search; hospital → **Unit audit trail**; lab → **Facility ledger**. Donors use `/track` for status only. Lab register sets **component type** (shelf life varies by component). After register/screening, lab can **Print bag label** (QR for the pack) and **Print donation slip** (donor handout).
 
-After pull: `cd tarrlok && php artisan migrate` (adds `component_type` on units/requests; existing rows default to Whole Blood).
+After pull: `cd tarrlok && composer install && php artisan migrate` (adds `component_type`; QR labels need `endroid/qr-code`).
 
 Details: [blockchain/README.md](../blockchain/README.md)
 

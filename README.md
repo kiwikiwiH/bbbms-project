@@ -349,6 +349,8 @@ Lab registers unit       →  quarantine, screening: pending (donor linked by ph
                          →  component_type on bag (Whole Blood / RBC / FFP / Platelets / Cryo)
                          →  expires_at from component shelf life (not one global number)
 Lab screening report     →  cleared → available  |  failed → discarded
+Print bag label (QR)     →  stick on pack; QR opens /track/{unit_code}
+Print donor slip         →  handout with QR + unit ID (includes donor name)
 Hospital inventory       →  only cleared + available + not expired units count as stock
 Partner request          →  blood_group + component_type; pending
 Partner approve + issue  →  FIFO matching group **and** component; units transfer
@@ -436,6 +438,7 @@ Example tunnel config: **[deploy/cloudflared-tesnet.xyz.example.yml](deploy/clou
 - [x] Integrity compare (MySQL vs `getUnit()`) and **blocked-attempt** log
 - [x] Admin blockchain dashboard — chain health, anchor stats, recent tx log, unit history search
 - [x] **Component type** on bags and partner requests (Whole Blood / RBC / FFP / Platelets / Cryo; per-component shelf life)
+- [x] **Printable bag QR label** — lab prints sticker (unit ID + group/component/expiry + QR → `/track`); donor slip also has QR
 - [x] Lab portal — register units (donor phone lookup), screening, inventory
 - [x] Lab screening — quarantine → cleared/failed; only cleared units issuable
 - [x] Partner exchange + incoming/outgoing blood requests

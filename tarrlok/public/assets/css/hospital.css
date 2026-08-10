@@ -1424,6 +1424,50 @@ a.hospital-request-id:hover {
   border-bottom: 1px solid #e6e8ed;
 }
 
+.unit-qr-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 16px;
+  border: 1px solid #e0e2e7;
+  border-radius: 12px;
+  background: #fafbfc;
+  text-align: center;
+}
+
+.unit-qr-image {
+  width: 140px;
+  height: 140px;
+  image-rendering: pixelated;
+  background: #fff;
+  border-radius: 8px;
+}
+
+.unit-qr-caption {
+  margin: 0;
+  font-size: 13px;
+  color: #555f6f;
+  line-height: 1.4;
+}
+
+.unit-qr-url {
+  margin: 0;
+  max-width: 100%;
+  font-size: 11px;
+  color: #555f6f;
+  word-break: break-all;
+}
+
+.unit-qr-url code {
+  font-size: 11px;
+}
+
+.unit-qr-panel .hospital-btn {
+  margin-top: 4px;
+}
+
 .trace-timeline {
   list-style: none;
   margin: 0;

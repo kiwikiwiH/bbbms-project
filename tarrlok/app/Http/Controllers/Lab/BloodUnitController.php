@@ -7,6 +7,7 @@ use App\Models\BloodUnit;
 use App\Models\Donor;
 use App\Services\BlockchainService;
 use App\Services\ExpiryService;
+use App\Services\QrCodeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -41,14 +42,31 @@ class BloodUnitController extends Controller
         ]);
     }
 
-    public function slip(BloodUnit $bloodUnit): View
+    public function slip(BloodUnit $bloodUnit, QrCodeService $qr): View
     {
         abort_unless($bloodUnit->hospital_id === auth()->user()->hospital_id, 403);
+
+        $trackUrl = route('track.show', $bloodUnit, absolute: true);
 
         return view('lab.units.slip', [
             'unit' => $bloodUnit->load('hospital', 'donor'),
             'hospital' => auth()->user()->hospital,
-            'trackUrl' => route('track.show', $bloodUnit),
+            'trackUrl' => $trackUrl,
+            'qrDataUri' => $qr->pngDataUri($trackUrl, 148),
+        ]);
+    }
+
+    public function bagLabel(BloodUnit $bloodUnit, QrCodeService $qr): View
+    {
+        abort_unless($bloodUnit->hospital_id === auth()->user()->hospital_id, 403);
+
+        $trackUrl = route('track.show', $bloodUnit, absolute: true);
+
+        return view('lab.units.bag-label', [
+            'unit' => $bloodUnit->load('hospital'),
+            'hospital' => auth()->user()->hospital,
+            'trackUrl' => $trackUrl,
+            'qrDataUri' => $qr->pngDataUri($trackUrl, 148),
         ]);
     }
 

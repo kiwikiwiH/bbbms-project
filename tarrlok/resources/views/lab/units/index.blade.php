@@ -98,6 +98,7 @@
                                     </a>
                                 @endif
                                 <a href="{{ route('lab.units.slip', $unit) }}" class="hospital-btn hospital-btn-outline hospital-btn-sm" target="_blank" rel="noopener">Slip</a>
+                                <a href="{{ route('lab.units.bag-label', $unit) }}" class="hospital-btn hospital-btn-outline hospital-btn-sm" target="_blank" rel="noopener">Bag QR</a>
                                 </div>
                             </td>
                         </tr>

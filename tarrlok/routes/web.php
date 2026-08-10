@@ -74,6 +74,7 @@ Route::middleware(['auth', 'lab'])->prefix('lab')->name('lab.')->group(function 
     Route::get('/units/create', [LabBloodUnitController::class, 'create'])->name('units.create');
     Route::post('/units', [LabBloodUnitController::class, 'store'])->name('units.store');
     Route::get('/units/{bloodUnit}/slip', [LabBloodUnitController::class, 'slip'])->name('units.slip');
+    Route::get('/units/{bloodUnit}/bag-label', [LabBloodUnitController::class, 'bagLabel'])->name('units.bag-label');
     Route::get('/units/{bloodUnit}/screening', [BloodScreeningController::class, 'show'])->name('units.screening.show');
     Route::post('/units/{bloodUnit}/screening', [BloodScreeningController::class, 'update'])->name('units.screening.update');
     Route::get('/trace', [BloodUnitTraceController::class, 'index'])->name('trace');

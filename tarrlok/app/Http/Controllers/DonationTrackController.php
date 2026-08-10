@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BloodUnit;
+use App\Services\QrCodeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -36,7 +37,7 @@ class DonationTrackController extends Controller
         return redirect()->route('track.show', $unit);
     }
 
-    public function show(BloodUnit $bloodUnit): View
+    public function show(BloodUnit $bloodUnit, QrCodeService $qr): View
     {
         $bloodUnit->load([
             'hospital',
@@ -47,8 +48,12 @@ class DonationTrackController extends Controller
 
         abort_unless($bloodUnit->donor?->tracking_consent, 404);
 
+        $trackUrl = route('track.show', $bloodUnit, absolute: true);
+
         return view('track.show', [
             'unit' => $bloodUnit,
+            'trackUrl' => $trackUrl,
+            'qrDataUri' => $qr->pngDataUri($trackUrl, 160),
         ]);
     }
 }

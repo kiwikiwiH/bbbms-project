@@ -38,14 +38,29 @@
             </div>
         </dl>
 
-        @if (session('slip_unit') === $unit->unit_code || $unit->screening_status === 'pending')
-            <p style="margin:0 0 20px;">
-                <a href="{{ route('lab.units.slip', $unit) }}" class="hospital-btn hospital-btn-outline hospital-btn-sm" target="_blank" rel="noopener">
-                    <span class="material-symbols-outlined">print</span>
-                    Print donation slip for donor
-                </a>
-            </p>
-        @endif
+        @include('shared.partials.unit-qr', [
+            'unit' => $unit,
+            'qrDataUri' => $qrDataUri ?? null,
+            'trackUrl' => $trackUrl ?? null,
+            'qrSize' => 140,
+            'qrCaption' => 'On-screen QR for this unit — scan opens public /track',
+            'printBagLabelRoute' => route('lab.units.bag-label', $unit),
+        ])
+
+        <p style="margin:0 0 20px;display:flex;flex-wrap:wrap;gap:8px;">
+            <a href="{{ route('lab.units.bag-label', $unit) }}" class="hospital-btn hospital-btn-primary hospital-btn-sm" target="_blank" rel="noopener">
+                <span class="material-symbols-outlined">qr_code_2</span>
+                Print bag label
+            </a>
+            <a href="{{ route('lab.units.slip', $unit) }}" class="hospital-btn hospital-btn-outline hospital-btn-sm" target="_blank" rel="noopener">
+                <span class="material-symbols-outlined">print</span>
+                Print donation slip for donor
+            </a>
+            <a href="{{ route('track.show', $unit) }}" class="hospital-btn hospital-btn-outline hospital-btn-sm" target="_blank" rel="noopener">
+                <span class="material-symbols-outlined">open_in_new</span>
+                Open public track
+            </a>
+        </p>
 
         @if ($errors->any())
             <div class="hospital-alert" style="background:#ffdad6;border:1px solid #e4beba;color:#93000a;margin-bottom:20px;">

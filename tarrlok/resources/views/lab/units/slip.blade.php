@@ -20,8 +20,10 @@
         .donation-slip-meta { margin: 0; padding: 0; list-style: none; font-size: 14px; line-height: 1.7; }
         .donation-slip-meta li { padding: 8px 0; border-bottom: 1px solid #e6e8ed; }
         .donation-slip-meta li:last-child { border-bottom: none; }
-        .donation-slip-track { margin-top: 20px; padding-top: 16px; border-top: 1px solid #e6e8ed; font-size: 13px; color: #555f6f; word-break: break-all; }
-        .donation-slip-actions { display: flex; gap: 12px; justify-content: center; margin-top: 24px; }
+        .donation-slip-track { margin-top: 20px; padding-top: 16px; border-top: 1px solid #e6e8ed; font-size: 13px; color: #555f6f; word-break: break-all; text-align: center; }
+        .donation-slip-qr { margin: 0 auto 12px; width: 148px; height: 148px; }
+        .donation-slip-qr img { width: 148px; height: 148px; image-rendering: pixelated; }
+        .donation-slip-actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 24px; }
         @media print {
             body { background: #fff; padding: 0; }
             .donation-slip { border: none; box-shadow: none; max-width: 100%; }
@@ -50,13 +52,17 @@
                 @endif
             </ul>
             <div class="donation-slip-track">
-                <strong>Track your donation:</strong><br>
-                {{ $trackUrl }}
+                <div class="donation-slip-qr">
+                    <img src="{{ $qrDataUri }}" width="148" height="148" alt="QR code to track this donation">
+                </div>
+                <strong>Scan to track your donation</strong><br>
+                Or open: {{ $trackUrl }}
             </div>
         </div>
     </div>
     <div class="donation-slip-actions">
         <button type="button" class="hospital-btn hospital-btn-primary" onclick="window.print()">Print slip</button>
+        <a href="{{ route('lab.units.bag-label', $unit) }}" class="hospital-btn hospital-btn-outline">Bag label (QR)</a>
         <a href="{{ route('lab.units.screening.show', $unit) }}" class="hospital-btn hospital-btn-outline">Back to screening</a>
     </div>
 </body>

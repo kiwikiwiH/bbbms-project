@@ -11,7 +11,7 @@
             </div>
             <h1 class="login-title">Track your donation</h1>
         </a>
-        <p class="login-subtitle">Enter the unit ID from your donation slip — you can only view that donation</p>
+        <p class="login-subtitle">Scan the QR on your donation slip or bag label, or type the unit ID — you can only view that donation</p>
     </div>
 
     <div class="login-card">
