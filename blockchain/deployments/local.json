@@ -42,6 +42,18 @@
         {
           "indexed": false,
           "internalType": "uint256",
+          "name": "actorId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "actorName",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
           "name": "timestamp",
           "type": "uint256"
         }
@@ -79,6 +91,24 @@
         {
           "indexed": false,
           "internalType": "uint256",
+          "name": "expiresAt",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "actorId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "actorName",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
           "name": "timestamp",
           "type": "uint256"
         }
@@ -110,12 +140,63 @@
         {
           "indexed": false,
           "internalType": "uint256",
+          "name": "actorId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "actorName",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
           "name": "timestamp",
           "type": "uint256"
         }
       ],
       "name": "UnitScreened",
       "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "unitCode",
+          "type": "string"
+        }
+      ],
+      "name": "getUnit",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "exists",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "hospitalId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "bloodGroup",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "expiresAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "enum BloodBank.ScreeningStatus",
+          "name": "screening",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
       "inputs": [],
@@ -151,6 +232,16 @@
           "internalType": "string",
           "name": "requestCode",
           "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "actorId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "actorName",
+          "type": "string"
         }
       ],
       "name": "recordIssue",
@@ -168,6 +259,16 @@
         {
           "internalType": "string",
           "name": "status",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "actorId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "actorName",
           "type": "string"
         }
       ],
@@ -192,14 +293,68 @@
           "internalType": "string",
           "name": "bloodGroup",
           "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "expiresAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "actorId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "actorName",
+          "type": "string"
         }
       ],
       "name": "registerUnit",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "units",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "exists",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "hospitalId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "bloodGroup",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "expiresAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "enum BloodBank.ScreeningStatus",
+          "name": "screening",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     }
   ],
   "network": "localhost",
-  "deployedAt": "2026-07-28T22:41:36.091Z"
+  "deployedAt": "2026-08-07T16:24:44.292Z"
 }
