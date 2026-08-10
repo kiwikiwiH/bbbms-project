@@ -50,10 +50,16 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
+  width: 100%;
+  min-width: 0;
 }
 
 .ledger-panel {
+  min-width: 0;
   min-height: 220px;
+  max-height: 560px;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: 16px;
   border: 1px solid #e0e2e7;
   border-radius: 14px;
@@ -86,6 +92,9 @@
 .ledger-row {
   padding: 12px 0;
   border-top: 1px solid #eef0f3;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .ledger-row-top {
@@ -93,6 +102,17 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
+  min-width: 0;
+}
+
+.ledger-row-top strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.ledger-row-top time {
+  flex-shrink: 0;
 }
 
 .ledger-row-top time,
@@ -108,6 +128,17 @@
 .ledger-empty,
 .ledger-note {
   margin: 6px 0 0;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.ledger-note {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
 }
 
 .ledger-row ul {
@@ -115,6 +146,8 @@
   padding-left: 18px;
   color: #8f1515;
   font-size: 13px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .ledger-row a {
@@ -128,7 +161,11 @@
 
 .ledger-hash,
 .ledger-row code {
+  display: inline-block;
+  max-width: 100%;
   font-size: 12px;
+  overflow-wrap: anywhere;
+  word-break: break-all;
 }
 
 .ledger-badge {

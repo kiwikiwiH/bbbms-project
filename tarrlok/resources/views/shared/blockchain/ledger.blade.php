@@ -113,7 +113,7 @@
                             · <code>{{ $attempt->unit_code }}</code>
                         @endif
                     </p>
-                    <p class="ledger-note">{{ $attempt->reason }}</p>
+                    <p class="ledger-note" title="{{ $attempt->reason }}">{{ \Illuminate\Support\Str::limit($attempt->reason, 180) }}</p>
                 </div>
             @empty
                 <p class="ledger-empty">No blocked chain writes yet. Invalid transitions (double screen, expired issue, etc.) appear here.</p>

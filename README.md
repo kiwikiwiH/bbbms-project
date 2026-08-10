@@ -160,6 +160,14 @@ DB_USERNAME=root
 DB_PASSWORD=your_password
 ```
 
+After every `git pull` that includes new features, run migrations again:
+
+```bash
+cd tarrlok
+php artisan migrate
+php artisan config:clear
+```
+
 Create the database:
 
 ```sql
@@ -514,6 +522,7 @@ Requires Python 3 with `python-docx` and `matplotlib`.
 | Unstyled on Laragon `*.test` | Either point the vhost document root at `tarrlok/public`, or open the repo folder (root `.htaccess` forwards into `tarrlok/public`). Still set `APP_URL` to that host. |
 | Unstyled via `localhost/.../tarrlok/public` | Do not serve Laravel from a subfolder if you can avoid it. Use `php artisan serve` or a vhost whose root is `tarrlok/public`. |
 | Secure cookie / cannot stay logged in on HTTP | Set `SESSION_SECURE_COOKIE=false` for local HTTP. |
+| **500 on Approve / Reject / Reverse / Issue** (`Unknown column 'rejected_by'` or `approved_by`) | New request-audit columns are missing. From `tarrlok/`: `php artisan migrate`. If that fails, start MySQL in Laragon first. |
 
 ---
 
