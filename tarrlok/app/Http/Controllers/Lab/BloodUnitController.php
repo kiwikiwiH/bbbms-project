@@ -70,7 +70,7 @@ class BloodUnitController extends Controller
             'blood_group' => ['required', 'string', 'in:'.implode(',', config('tarrlok.blood_groups'))],
             'component_type' => ['required', 'string', 'in:'.$componentKeys],
             'collected_at' => ['required', 'date', 'before_or_equal:today'],
-            'donor_phone' => ['required', 'string', 'max:30'],
+            'donor_phone' => ['required', 'string', 'regex:/^\d{9,10}$/'],
             'donor_name' => ['required', 'string', 'max:255'],
             'donor_email' => ['nullable', 'email', 'max:255'],
         ]);

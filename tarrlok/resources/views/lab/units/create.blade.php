@@ -33,7 +33,20 @@
                     <div class="hospital-date-row">
                         <div class="hospital-input-wrap" style="flex:1;">
                             <span class="material-symbols-outlined hospital-input-icon">call</span>
-                            <input class="hospital-input" id="donor_phone" name="donor_phone" type="tel" value="{{ old('donor_phone') }}" placeholder="244123456" required>
+                            <input
+                                class="hospital-input"
+                                id="donor_phone"
+                                name="donor_phone"
+                                type="tel"
+                                inputmode="numeric"
+                                autocomplete="tel-national"
+                                maxlength="10"
+                                pattern="[0-9]{9,10}"
+                                title="Enter 9 or 10 digits (e.g. 0244123456)"
+                                value="{{ old('donor_phone') }}"
+                                placeholder="0244123456"
+                                required
+                            >
                         </div>
                         <button type="button" class="hospital-date-today" id="donor_lookup_btn">Look up</button>
                     </div>
@@ -127,6 +140,11 @@
 
     document.getElementById('component_type')?.addEventListener('change', refreshShelfLifeHint);
     refreshShelfLifeHint();
+
+    const donorPhoneInput = document.getElementById('donor_phone');
+    donorPhoneInput?.addEventListener('input', function () {
+        this.value = this.value.replace(/\D/g, '').slice(0, 10);
+    });
 
     document.getElementById('collected_at_today')?.addEventListener('click', function () {
         const input = document.getElementById('collected_at');
