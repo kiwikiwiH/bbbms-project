@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuthActivityLog;
 use App\Models\BloodRequest;
 use App\Models\Hospital;
 use App\Notifications\HospitalAccessRevoked;
@@ -77,6 +78,12 @@ class RegistrationReviewController extends Controller
             );
         }
 
+        AuthActivityLog::recordAction(
+            $request,
+            auth()->user(),
+            'Approved facility registration: '.$hospital->name
+        );
+
         return redirect()
             ->route('admin.registrations.show', $hospital)
             ->with('status', 'Facility approved. An official email has been sent to the hospital administrator.');
@@ -115,6 +122,12 @@ class RegistrationReviewController extends Controller
                 )
             );
         }
+
+        AuthActivityLog::recordAction(
+            $request,
+            auth()->user(),
+            'Rejected facility registration: '.$hospital->name
+        );
 
         return redirect()
             ->route('admin.registrations.show', $hospital)
@@ -167,6 +180,12 @@ class RegistrationReviewController extends Controller
                 )
             );
         }
+
+        AuthActivityLog::recordAction(
+            $request,
+            auth()->user(),
+            'Revoked network access for '.$hospital->name
+        );
 
         return redirect()
             ->route('admin.registrations.show', $hospital)

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Lab;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuthActivityLog;
 use App\Models\BloodUnit;
 use App\Models\Donor;
 use App\Services\BlockchainService;
@@ -166,6 +167,12 @@ class BloodUnitController extends Controller
         if ($txHash) {
             $unit->update(['blockchain_register_tx' => $txHash]);
         }
+
+        AuthActivityLog::recordAction(
+            $request,
+            $user,
+            'Registered unit '.$unit->unit_code.' ('.$unit->blood_group.' · '.$unit->componentLabel().')'
+        );
 
         return redirect()
             ->route('lab.units.screening.show', $unit)

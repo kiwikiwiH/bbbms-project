@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Lab;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuthActivityLog;
 use App\Models\BloodUnit;
 use App\Services\BlockchainService;
 use App\Services\DonorNotificationService;
@@ -92,6 +93,12 @@ class BloodScreeningController extends Controller
 
             app(DonorNotificationService::class)->notifyStatusChange($bloodUnit, 'screening_cleared');
 
+            AuthActivityLog::recordAction(
+                $request,
+                $user,
+                'Screening cleared for '.$bloodUnit->unit_code.' ('.$bloodUnit->blood_group.' · '.$bloodUnit->componentLabel().')'
+            );
+
             return redirect()
                 ->route('lab.units.index')
                 ->with('status', $bloodUnit->unit_code.' cleared for inventory — all screening non-reactive.');
@@ -117,6 +124,12 @@ class BloodScreeningController extends Controller
         }
 
         app(DonorNotificationService::class)->notifyStatusChange($bloodUnit, 'screening_failed');
+
+        AuthActivityLog::recordAction(
+            $request,
+            $user,
+            'Screening failed for '.$bloodUnit->unit_code.' (discarded)'
+        );
 
         return redirect()
             ->route('lab.units.index')

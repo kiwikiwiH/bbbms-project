@@ -12,7 +12,7 @@ class AuthActivityLogController extends Controller
     public function __invoke(Request $request): View
     {
         $event = trim((string) $request->query('event', ''));
-        $allowed = ['login', 'logout', 'login_failed'];
+        $allowed = ['login', 'logout', 'login_failed', 'action'];
 
         if ($event !== '' && ! in_array($event, $allowed, true)) {
             $event = '';

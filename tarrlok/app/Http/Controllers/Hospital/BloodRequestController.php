@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Hospital;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuthActivityLog;
 use App\Models\BloodRequest;
 use App\Models\BloodUnit;
 use App\Models\Hospital;
@@ -179,6 +180,13 @@ class BloodRequestController extends Controller
             'status' => 'pending',
         ]);
 
+        AuthActivityLog::recordAction(
+            $request,
+            auth()->user(),
+            'Requested '.$bloodRequest->quantity.' '.$bloodRequest->blood_group.' '.$bloodRequest->componentLabel()
+                .' from '.$partner->name.' ('.$bloodRequest->request_code.')'
+        );
+
         return redirect()
             ->route('hospital.requests', ['view' => 'outgoing'])
             ->with('status', 'Request '.$bloodRequest->request_code.' sent to '.$partner->name.'.');
@@ -216,6 +224,12 @@ class BloodRequestController extends Controller
             'rejected_at' => null,
         ]);
 
+        AuthActivityLog::recordAction(
+            request(),
+            auth()->user(),
+            'Approved '.$bloodRequest->request_code.' ('.$bloodRequest->quantity.' '.$bloodRequest->blood_group.' '.$bloodRequest->componentLabel().')'
+        );
+
         return back()->with('status', $bloodRequest->request_code.' approved ('.$free.' '.$bloodRequest->blood_group.' '.$bloodRequest->componentLabel().' free). Issue units when ready.');
     }
 
@@ -244,6 +258,12 @@ class BloodRequestController extends Controller
             'approved_at' => $bloodRequest->approved_at,
         ]);
 
+        AuthActivityLog::recordAction(
+            $request,
+            auth()->user(),
+            'Rejected '.$bloodRequest->request_code
+        );
+
         return back()->with('status', $bloodRequest->request_code.' rejected.');
     }
 
@@ -265,6 +285,12 @@ class BloodRequestController extends Controller
             'reversed_at' => now(),
             'reverse_reason' => ($validated['reverse_reason'] ?? null) ?: 'Approval reversed before issue.',
         ]);
+
+        AuthActivityLog::recordAction(
+            $request,
+            auth()->user(),
+            'Reversed approval for '.$bloodRequest->request_code
+        );
 
         return back()->with('status', $bloodRequest->request_code.' reversed to pending. You can approve again when stock is ready, or reject.');
     }
@@ -363,6 +389,13 @@ class BloodRequestController extends Controller
 
         $bloodRequest->loadMissing('requestingHospital');
 
+        AuthActivityLog::recordAction(
+            request(),
+            auth()->user(),
+            'Issued '.$bloodRequest->quantity.' unit(s) for '.$bloodRequest->request_code
+                .' to '.$bloodRequest->requestingHospital->name
+        );
+
         $message = $bloodRequest->request_code.' fulfilled — '.$bloodRequest->quantity.' unit(s) transferred to '.$bloodRequest->requestingHospital->name.'.';
 
         if (! empty($anchorFailures)) {
@@ -393,6 +426,12 @@ class BloodRequestController extends Controller
             'rejected_by' => auth()->id(),
             'rejected_at' => now(),
         ]);
+
+        AuthActivityLog::recordAction(
+            $request,
+            auth()->user(),
+            'Cancelled outgoing request '.$bloodRequest->request_code
+        );
 
         return back()->with('status', $bloodRequest->request_code.' cancelled.');
     }

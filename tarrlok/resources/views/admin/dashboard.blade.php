@@ -23,11 +23,11 @@
 
 <div class="admin-card" style="margin-bottom:24px;">
     <div class="admin-card-head">
-        <h2 class="admin-card-title">Sign-in log</h2>
+        <h2 class="admin-card-title">Activity log</h2>
         <a href="{{ route('admin.auth-log') }}" class="admin-btn admin-btn-outline">View log</a>
     </div>
     <div class="admin-meta" style="border-top:none;">
-        Track who signed in and out (hospital, lab, and admin accounts), including failed attempts.
+        Track who signed in and out, failed attempts, and key actions (register/screen units, approve/issue requests, registration decisions).
     </div>
 </div>
 

@@ -73,9 +73,63 @@ class AuthActivityLogTest extends TestCase
         $this->actingAs($admin)
             ->get('/admin/auth-log')
             ->assertOk()
-            ->assertSee('Sign-in log', false)
+            ->assertSee('Activity log', false)
             ->assertSee($hospitalUser->name, false)
             ->assertSee('Login', false);
+    }
+
+    public function test_lab_register_unit_is_recorded_as_action(): void
+    {
+        $hospital = Hospital::create([
+            'name' => 'Action Log Hospital',
+            'type' => 'regional',
+            'region' => 'greater_accra',
+            'city' => 'Accra',
+            'license_id' => 'HFRA-ACTLOG-001',
+            'phone' => '+233244777200',
+            'email' => 'actlog@hospital.gh',
+            'status' => 'approved',
+            'reviewed_at' => now(),
+        ]);
+
+        $lab = User::factory()->create([
+            'hospital_id' => $hospital->id,
+            'role' => 'lab',
+            'status' => 'active',
+            'job_title' => 'Lab scientist',
+        ]);
+
+        $this->actingAs($lab)
+            ->post(route('lab.units.store'), [
+                'blood_group' => 'O+',
+                'component_type' => 'red_blood_cells',
+                'collected_at' => now()->toDateString(),
+                'donor_phone' => '0244111333',
+                'donor_name' => 'Activity Donor',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('auth_activity_logs', [
+            'user_id' => $lab->id,
+            'event' => 'action',
+        ]);
+
+        $row = AuthActivityLog::query()->where('event', 'action')->latest('id')->first();
+        $this->assertNotNull($row);
+        $this->assertStringContainsString('Registered unit', (string) $row->summary);
+        $this->assertStringContainsString('Red Blood Cells', (string) $row->summary);
+
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'status' => 'active',
+            'hospital_id' => null,
+        ]);
+
+        $this->actingAs($admin)
+            ->get('/admin/auth-log?event=action')
+            ->assertOk()
+            ->assertSee('Registered unit', false)
+            ->assertSee($lab->name, false);
     }
 
     private function hospitalUser(): User
